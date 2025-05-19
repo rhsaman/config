@@ -7,7 +7,9 @@ CURRENT=$(pmset -g | grep displaysleep | awk '{print $2}')
 
 # این خط اول خروجی منوباره
 if [ "$CURRENT" = "10" ]; then
-  echo "🖥️"
+  echo "🖥️ 10m"
+elif [ "$CURRENT" = "15" ]; then 
+  echo "🖥️ 15m"
 else
   echo "📴"
 fi
@@ -15,8 +17,6 @@ fi
 
 echo "---"
 
-if [ "$CURRENT" = "10" ]; then
-  echo "📴 stop | bash='/usr/bin/sudo' param1='/usr/bin/pmset' param2='displaysleep' param3='0' refresh=true terminal=false"
-else
-  echo "🖥️ Turn display off when inactive 10 minutes| bash='/usr/bin/sudo' param1='/usr/bin/pmset' param2='displaysleep' param3='10' refresh=true terminal=false"
-fi
+echo "🖥️ Set display sleep to 10 minutes | bash='/usr/bin/sudo' param1='/usr/bin/pmset' param2='displaysleep' param3='10' refresh=true terminal=false"
+echo "🖥️ Set display sleep to 15 minutes | bash='/usr/bin/sudo' param1='/usr/bin/pmset' param2='displaysleep' param3='15' refresh=true terminal=false"
+echo "📴 Turn display sleep off | bash='/usr/bin/sudo' param1='/usr/bin/pmset' param2='displaysleep' param3='0' refresh=true terminal=false"
