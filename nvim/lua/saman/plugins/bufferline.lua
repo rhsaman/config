@@ -30,11 +30,18 @@ return {
         },
 
         indicator = {
-          icon = "🔥 ", -- this should be omitted if indicator style is not 'icon'
+          icon = " ", -- this should be omitted if indicator style is not 'icon'
           style = "icon", --"icon" | "underline" | "none",
         },
 
-        numbers = "ordinal",
+        -- numbers = "ordinal",
+      },
+      highlights = {
+        indicator_selected = {
+          fg = "#00FF00", -- pick your desired underline color
+          -- underline = true,
+          bold = true,
+        },
       },
     })
   end,
