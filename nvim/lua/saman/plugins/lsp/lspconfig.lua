@@ -16,18 +16,6 @@ return {
     local capabilities = cmp_nvim_lsp.default_capabilities()
 
     local on_attach = function(client, bufnr)
-      vim.keymap.set("n", "<leader>i", function()
-        if vim.lsp.inlay_hint then
-          local ok, enabled = pcall(vim.lsp.inlay_hint.is_enabled)
-          if ok then
-            vim.lsp.inlay_hint.enable(not enabled)
-          else
-            vim.notify("Inlay hints not available", vim.log.levels.WARN)
-            vim.cmd("LspRestart")
-          end
-        end
-      end, { desc = "Toggle inlay hints" })
-
       -- Optionally disable formatting if another plugin is handling it
       if client.server_capabilities.documentFormattingProvider then
         client.server_capabilities.documentFormattingProvider = false
@@ -55,9 +43,33 @@ return {
     })
 
     -- configure typescript server with plugin
-    lspconfig["ts_ls"].setup({
+    lspconfig["tsserver"].setup({
       capabilities = capabilities,
       on_attach = on_attach,
+      settings = {
+        typescript = {
+          inlayHints = {
+            includeInlayEnumMemberValueHints = true,
+            includeInlayFunctionLikeReturnTypeHints = true,
+            includeInlayFunctionParameterTypeHints = true,
+            includeInlayParameterNameHints = "all",
+            includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+            includeInlayPropertyDeclarationTypeHints = true,
+            includeInlayVariableTypeHints = true,
+          },
+        },
+        javascript = {
+          inlayHints = {
+            includeInlayEnumMemberValueHints = true,
+            includeInlayFunctionLikeReturnTypeHints = true,
+            includeInlayFunctionParameterTypeHints = true,
+            includeInlayParameterNameHints = "all",
+            includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+            includeInlayPropertyDeclarationTypeHints = true,
+            includeInlayVariableTypeHints = true,
+          },
+        },
+      },
     })
 
     -- configure css server
@@ -83,8 +95,8 @@ return {
     lspconfig.gopls.setup({
       capabilities = capabilities,
       on_attach = on_attach,
-      cmd = { "gopls", "serve" },
-      filetypes = { "go", "gomod" },
+      cmd = { "gopls" },
+      filetypes = { "go" },
 
       -- root_dir = util.root_pattern("go.work", "go.mod", ".git"),
       settings = {

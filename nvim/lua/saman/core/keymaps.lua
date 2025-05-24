@@ -63,18 +63,8 @@ keymap.set("n", "<leader>m", ":MaximizerToggle<Cr>", { desc = "maximizer" })
 keymap.set("n", "<leader>qn", ":cnext<Cr>", { desc = "next quickfix" })
 keymap.set("n", "<leader>qp", ":cprevious<Cr>", { desc = "next quickfix" })
 
--- Close all buffers except current and zsh terminal
-vim.keymap.set("n", "<leader>bo", function()
-  local current = vim.api.nvim_get_current_buf()
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if buf ~= current and vim.api.nvim_buf_is_loaded(buf) then
-      local bufname = vim.fn.bufname(buf)
-      local buftype = vim.bo[buf].buftype
-
-      -- Prevent closing terminal buffers that run zsh
-      if buftype ~= "terminal" or not string.find(bufname, "zsh") then
-        vim.cmd("bd! " .. buf)
-      end
-    end
+vim.keymap.set("n", "<leader>i", function()
+  if vim.lsp.inlay_hint then
+    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ 0 }), { 0 })
   end
-end, { desc = "Close all buffers except current and zsh terminal" })
+end, { desc = "Toggle inlay hints" })
