@@ -16,9 +16,17 @@ return {
     local capabilities = cmp_nvim_lsp.default_capabilities()
 
     local on_attach = function(client, bufnr)
-      -- if client.server_capabilities.inlayHintProvider then
-      --   vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-      -- end
+      vim.keymap.set("n", "<leader>i", function()
+        if vim.lsp.inlay_hint then
+          local ok, enabled = pcall(vim.lsp.inlay_hint.is_enabled)
+          if ok then
+            vim.lsp.inlay_hint.enable(not enabled)
+          else
+            vim.notify("Inlay hints not available", vim.log.levels.WARN)
+            vim.cmd("LspRestart")
+          end
+        end
+      end, { desc = "Toggle inlay hints" })
 
       -- Optionally disable formatting if another plugin is handling it
       if client.server_capabilities.documentFormattingProvider then
@@ -84,6 +92,8 @@ return {
           analyses = {
             unusedparams = true,
           },
+          gofumpt = true, -- enables gofumpt instead of gofmt
+          ["local"] = "", -- optional: for import grouping
           usePlaceholders = false,
           staticcheck = true,
           hints = {

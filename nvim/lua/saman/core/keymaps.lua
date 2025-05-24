@@ -78,10 +78,3 @@ vim.keymap.set("n", "<leader>bo", function()
     end
   end
 end, { desc = "Close all buffers except current and zsh terminal" })
-
--- inlay hint
-vim.keymap.set("n", "<leader>i", function()
-  if vim.lsp.inlay_hint then
-    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-  end
-end, { desc = "inlayHint" })
