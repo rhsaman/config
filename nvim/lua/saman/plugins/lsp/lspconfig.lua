@@ -16,22 +16,9 @@ return {
     local capabilities = cmp_nvim_lsp.default_capabilities()
 
     local on_attach = function(client, bufnr)
-      local function buf_set_keymap(...)
-        vim.api.nvim_buf_set_keymap(bufnr, ...)
-      end
-
-      local opts = { noremap = true, silent = true }
-
-      -- opts.inlay_hints = { enable = true }
-
-      -- Example keymaps
-      buf_set_keymap("n", "K", "<Cmd>lua vim.lsp.buf.hover()<CR>", opts)
-
-      vim.keymap.set("n", "<leader>i", function()
-        if vim.lsp.inlay_hint and client.server_capabilities.inlayHintProvider then
-          vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-        end
-      end, { desc = "Toggle inlay hints" })
+      -- if client.server_capabilities.inlayHintProvider then
+      --   vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+      -- end
 
       -- Optionally disable formatting if another plugin is handling it
       if client.server_capabilities.documentFormattingProvider then

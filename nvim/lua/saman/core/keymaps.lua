@@ -53,8 +53,8 @@ keymap.set(
 -- harpoon
 keymap.set("n", "<leader>ha", ":lua require('harpoon.mark').add_file()<cr>", { desc = "harpoon add file" })
 keymap.set("n", "<leader>ho", ":lua require('harpoon.ui').toggle_quick_menu()<cr>", { desc = "harpoon files" })
--- keymap.set("n", "<C-n>", ':lua require("harpoon.ui").nav_next()<cr>', { desc = "harpoon next file" })
--- keymap.set("n", "<C-p>", ':lua require("harpoon.ui").nav_prev()<cr>', { desc = "harpoon previous files" })
+keymap.set("n", "<C-n>", ':lua require("harpoon.ui").nav_next()<cr>', { desc = "harpoon next file" })
+keymap.set("n", "<C-p>", ':lua require("harpoon.ui").nav_prev()<cr>', { desc = "harpoon previous files" })
 
 -- maximizer
 keymap.set("n", "<leader>m", ":MaximizerToggle<Cr>", { desc = "maximizer" })
@@ -62,18 +62,6 @@ keymap.set("n", "<leader>m", ":MaximizerToggle<Cr>", { desc = "maximizer" })
 -- quick fix
 keymap.set("n", "<leader>qn", ":cnext<Cr>", { desc = "next quickfix" })
 keymap.set("n", "<leader>qp", ":cprevious<Cr>", { desc = "next quickfix" })
-
--- bufferline
-keymap.set("n", "<C-n>", ":BufferLineCycleNext<cr>", { desc = "next buffer" })
-keymap.set("n", "<C-p>", ":BufferLineCyclePrev<cr>", { desc = "prev buffer" })
-keymap.set("n", "<leader>bn", ":BufferLineMoveNext<cr>", { desc = "move next buffer" })
-keymap.set("n", "<leader>bp", ":BufferLineMovePrev<cr>", { desc = "move prev buffer" })
-keymap.set("n", "<leader>bd", ":bd!<CR>", { desc = "close buffer" })
-keymap.set("n", "<leader>bl", ":BufferLineCloseRight<CR>", { desc = "close right buffer" })
-keymap.set("n", "<leader>bh", ":BufferLineCloseLeft<CR>", { desc = "close left buffer" })
-keymap.set("n", "<leader>bg", ":BufferLinePick<cr>", { desc = "go to buffer" })
-keymap.set("n", "<leader>bs", ":BufferLineSortByDirectory<cr>", { desc = "sort buffer with dir" })
-keymap.set("n", "<leader>bt", ":BufferLineTogglePin<cr>", { desc = "toggle buffer pin" })
 
 -- Close all buffers except current and zsh terminal
 vim.keymap.set("n", "<leader>bo", function()
@@ -91,14 +79,9 @@ vim.keymap.set("n", "<leader>bo", function()
   end
 end, { desc = "Close all buffers except current and zsh terminal" })
 
+-- inlay hint
 vim.keymap.set("n", "<leader>i", function()
-  local bufnr = vim.api.nvim_get_current_buf()
   if vim.lsp.inlay_hint then
-    local ok, enabled = pcall(vim.lsp.inlay_hint.is_enabled, bufnr)
-    if ok then
-      vim.lsp.inlay_hint.enable(bufnr, not enabled)
-    else
-      vim.notify("Inlay hints not available", vim.log.levels.WARN)
-    end
+    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
   end
-end, { desc = "Toggle inlay hints" })
+end, { desc = "inlayHint" })
