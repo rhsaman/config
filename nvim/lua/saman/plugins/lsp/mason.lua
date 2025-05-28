@@ -46,10 +46,15 @@ return {
     -- setup for external tools
     mason_tool_installer.setup({
       ensure_installed = {
-        "prettier", -- JS/HTML/CSS formatter
-        "stylua", -- Lua formatter
-        "black", -- Python formatter
-        "eslint_d", -- JS/TS linter
+        "golines",        -- go formatter
+        "gofumpt",        -- go formatter
+        "goimports",      -- go formatter
+        "black",          -- python formatter
+        "ruff",           -- python linter
+        "eslint_d",       -- js/ts linter
+        "prettier",       -- universal formatter
+        "stylua",         -- lua formatter
+        "dart-debug-adapter", -- dart debugger (if supported by mason-tool-installer)
       },
     })
   end,
