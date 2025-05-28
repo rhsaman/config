@@ -46,6 +46,7 @@ return {
     -- setup for external tools
     mason_tool_installer.setup({
       ensure_installed = {
+        "delve",
         "golines",        -- go formatter
         "gofumpt",        -- go formatter
         "goimports",      -- go formatter

@@ -62,7 +62,3 @@ keymap.set("n", "<leader>m", ":MaximizerToggle<Cr>", { desc = "maximizer" })
 -- quick fix
 keymap.set("n", "<leader>qn", ":cnext<Cr>", { desc = "next quickfix" })
 keymap.set("n", "<leader>qp", ":cprevious<Cr>", { desc = "next quickfix" })
-
-vim.keymap.set("n", "<leader>i", function()
-  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-end, { desc = "Toggle inlay hints" })

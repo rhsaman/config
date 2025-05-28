@@ -20,19 +20,24 @@ return {
       if client.server_capabilities.documentFormattingProvider then
         client.server_capabilities.documentFormattingProvider = false
       end
+
+      vim.keymap.set("n", "<leader>i", function()
+        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+      end, { desc = "inlayHint" })
     end
 
     -- Change the Diagnostic symbols in the sign column (gutter)
     -- (not in youtube nvim video)
-    local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-    for type, icon in pairs(signs) do
-      local hl = "DiagnosticSign" .. type
-      vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-    end
-
     vim.diagnostic.config({
+      signs = {
+        text = {
+          [vim.diagnostic.severity.ERROR] = " ",
+          [vim.diagnostic.severity.WARN] = " ",
+          [vim.diagnostic.severity.HINT] = "󰌵 ",
+          [vim.diagnostic.severity.INFO] = " ",
+        },
+      },
       virtual_text = { current_line = true },
-      signs = true,
       underline = true,
     })
 

@@ -22,7 +22,6 @@ return {
     wk.add({
       { "<leader>f", group = "file" }, -- group
       { "<leader>h", group = "harpoon" }, -- group
-      { "<leader>d", group = "debug" },
       { "<leader>b", group = "buffer" },
       { "<leader>a", group = "avante ai" },
       { "<leader>q", group = "quick fix" },
