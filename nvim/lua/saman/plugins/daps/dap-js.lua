@@ -1,33 +1,26 @@
 return {
   "mxsdev/nvim-dap-vscode-js",
   ft = { "javascriptreact", "javascript", "typescript" },
-  opt = true,
+  -- opt = true,
   dependencies = { "mfussenegger/nvim-dap" },
 
   config = function()
     require("dap-vscode-js").setup({
-      debugger_path = "/Users/saman/vscode-js-debug",
-      -- debugger_cmd = { "npm test" },
-      adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" }, -- which adapters to register in nvim-dap
+      debugger_path = "/Users/saman/vscode-js-debug", -- مسیر به درستی ست شده
+      adapters = { "pwa-node" },
     })
 
-    for _, language in ipairs({ "typescript", "javascript" }) do
-      require("dap").configurations[language] = {
+    local dap = require("dap")
 
-        -- {
-        -- 	type = "pwa-node",
-        -- 	request = "launch",
-        -- 	name = "Launch file",
-        -- 	program = "${file}",
-        -- 	-- port = 3002,
-        -- 	cwd = "${workspaceFolder}",
-        -- },
+    for _, language in ipairs({ "typescript", "javascript" }) do
+      dap.configurations[language] = {
         {
           type = "pwa-node",
           request = "attach",
-          name = "Attach",
+          name = "Attach to Node",
           processId = require("dap.utils").pick_process,
-          cwd = "${workspaceFolder}",
+          cwd = vim.fn.getcwd(),
+          -- ❌ دیگه port نده. چون adapter خودش executable هست، نه server
         },
       }
     end
