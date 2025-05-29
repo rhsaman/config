@@ -1,4 +1,3 @@
-require("plugins.core")
 require("config.keymaps")
 require("config.options")
 require("config.terminal")

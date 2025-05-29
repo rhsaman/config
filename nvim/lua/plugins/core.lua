@@ -3,6 +3,7 @@ return {
     "mfussenegger/nvim-dap",
     event = "VeryLazy",
   },
+
   -- lsp
   {
     "neovim/nvim-lspconfig",
@@ -62,11 +63,6 @@ return {
           end
         end,
       })
-
-      -- inlay_hint
-      vim.keymap.set("n", "<leader>i", function()
-        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-      end, { desc = "Toggle inlay hints" })
 
       -- configure html server
       lspconfig["html"].setup({
@@ -233,6 +229,7 @@ return {
       })
     end,
   },
+
   -- mason
   {
     "williamboman/mason.nvim",
@@ -376,6 +373,7 @@ return {
       })
     end,
   },
+
   --auto session
   {
     "rmagatti/auto-session",
@@ -433,6 +431,7 @@ return {
       cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
     end,
   },
+
   -- blank indent
   {
     "lukas-reineke/indent-blankline.nvim",
@@ -462,6 +461,7 @@ return {
       })
     end,
   },
+
   -- cmp
   {
     "hrsh7th/nvim-cmp",
@@ -532,9 +532,11 @@ return {
       })
     end,
   },
+
   -- codium
   {
     "Exafunction/codeium.vim",
+
     config = function()
       -- Change '<C-g>' here to any keycode you like.
       vim.keymap.set("i", "<c-t>", function()
@@ -1278,6 +1280,7 @@ return {
 
   --treesitter context
   {
+
     "nvim-treesitter/nvim-treesitter-context",
     lazy = true,
     event = { "BufReadPre", "BufNewFile" },
