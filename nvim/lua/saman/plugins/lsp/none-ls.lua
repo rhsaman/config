@@ -56,19 +56,6 @@ return {
 				-- null_ls.builtins.diagnostics.eslint_d,
 			},
 			on_attach = function(current_client, bufnr)
-				-- Trigger signature help automatically when typing '(' or ',' in insert mode
-				vim.api.nvim_create_autocmd("InsertCharPre", {
-					pattern = "*",
-					callback = function()
-						local char = vim.v.char
-						if char == "(" or char == "," then
-							vim.defer_fn(function()
-								vim.lsp.buf.signature_help()
-							end, 1) -- delay slightly to allow char insertion
-						end
-					end,
-				})
-
 				-- configure format on save
 				if current_client.supports_method("textDocument/formatting") then
 					vim.api.nvim_clear_autocmds({ group = augroup, buffer = bufnr })

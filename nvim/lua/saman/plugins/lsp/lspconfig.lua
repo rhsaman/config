@@ -26,6 +26,24 @@ return {
 			underline = true,
 		})
 
+		-- Trigger signature help automatically when typing '(' or ',' in insert mode
+		vim.api.nvim_create_autocmd("InsertCharPre", {
+			pattern = "*",
+			callback = function()
+				local char = vim.v.char
+				if char == "(" or char == "," then
+					vim.defer_fn(function()
+						vim.lsp.buf.signature_help()
+					end, 1) -- delay slightly to allow char insertion
+				end
+			end,
+		})
+
+		-- inlay_hint
+		vim.keymap.set("n", "<leader>i", function()
+			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+		end, { desc = "Toggle inlay hints" })
+
 		-- used to enable autocompletion (assign to every lsp server config)
 		local capabilities = cmp_nvim_lsp.default_capabilities()
 
