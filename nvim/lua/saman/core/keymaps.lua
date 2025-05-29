@@ -12,9 +12,6 @@ keymap.set("n", "<leader>ws", ":SessionSave<CR>", { desc = "Save session for aut
 -- lsp
 keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "See available code actions" })     -- see available code actions, in visual mode will apply to selection
 keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", { desc = "Show LSP type definitions" }) -- show lsp type definitions
-keymap.set("n", "gr", "<cmd>Telescope lsp_references<CR>", { desc = "Show LSP references" })        -- show definition, references
--- keymap.set("n", "R", vim.lsp.buf.hover, { desc = "Show documentation for what is under cursor" }) -- show documentation for what is under cursor
-keymap.set("n", "gD", vim.lsp.buf.declaration, { desc = "Go to declaration" })                      -- go to declaration
 keymap.set("n", "gi", vim.lsp.buf.implementation, { desc = "Go to implementation" })                -- go to declaration
 
 ------------------------resize window-----------------------
@@ -60,5 +57,5 @@ keymap.set("n", "<C-p>", ':lua require("harpoon.ui").nav_prev()<cr>', { desc = "
 keymap.set("n", "<leader>m", ":MaximizerToggle<Cr>", { desc = "maximizer" })
 
 -- quick fix
-keymap.set("n", "<leader>qn", ":cnext<Cr>", { desc = "next quickfix" })
-keymap.set("n", "<leader>qp", ":cprevious<Cr>", { desc = "next quickfix" })
+keymap.set("n", "<S-n>", ":cnext<Cr>", { desc = "next quickfix" })
+keymap.set("n", "<S-p>", ":cprevious<Cr>", { desc = "next quickfix" })

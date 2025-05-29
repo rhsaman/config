@@ -21,10 +21,10 @@ return {
     local wk = require("which-key")
     wk.add({
       { "<leader>f", group = "file" }, -- group
+      { "gr",        group = "code" }, -- group
       { "<leader>h", group = "harpoon" }, -- group
       { "<leader>b", group = "buffer" },
       { "<leader>a", group = "avante ai" },
-      { "<leader>q", group = "quick fix" },
       { "<leader>g", group = "git" },
       { "<leader>F", group = "flutter" },
       { "<leader>T", group = "tab" },
