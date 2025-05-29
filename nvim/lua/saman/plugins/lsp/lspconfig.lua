@@ -12,6 +12,17 @@ return {
     -- import cmp-nvim-lsp plugin
     local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
+    local capabilities = cmp_nvim_lsp.default_capabilities()
+    local on_attach = function(client, bufnr)
+      if vim.lsp.buf_is_attached(bufnr, client.id) then
+        return
+      end
+      -- Optionally disable formatting if another plugin is handling it
+      if client.server_capabilities.documentFormattingProvider then
+        client.server_capabilities.documentFormattingProvider = false
+      end
+    end
+
     -- Change the Diagnostic symbols in the sign column (gutter)
     vim.diagnostic.config({
       signs = {
@@ -28,7 +39,6 @@ return {
 
     -- Trigger signature help automatically when typing '(' or ',' in insert mode
     local signature_lock = false
-
     vim.api.nvim_create_autocmd("InsertCharPre", {
       pattern = "*",
       callback = function()
@@ -48,16 +58,6 @@ return {
     vim.keymap.set("n", "<leader>i", function()
       vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
     end, { desc = "Toggle inlay hints" })
-
-    -- used to enable autocompletion (assign to every lsp server config)
-    local capabilities = cmp_nvim_lsp.default_capabilities()
-
-    local on_attach = function(client, _)
-      -- Optionally disable formatting if another plugin is handling it
-      if client.server_capabilities.documentFormattingProvider then
-        client.server_capabilities.documentFormattingProvider = false
-      end
-    end
 
     -- configure html server
     lspconfig["html"].setup({
