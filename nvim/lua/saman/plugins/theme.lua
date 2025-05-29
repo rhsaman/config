@@ -83,7 +83,7 @@ return {
 
       styles = {
         bold = true,
-        italic = true,
+        italic = false,
         transparency = false,
       },
 
@@ -121,7 +121,7 @@ return {
 
     vim.cmd.colorscheme("rose-pine")
     vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", { fg = "#ff5555", bold = true })
-    -- vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE", fg = "#ff5555" })
+    vim.api.nvim_set_hl(0, "NormalFloat", { bg = "#000000", fg = NONE })
     -- fold color
     vim.cmd("highlight Folded guifg=#5B586E guibg=NONE ")
   end,
