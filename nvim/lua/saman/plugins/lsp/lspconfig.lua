@@ -27,14 +27,19 @@ return {
 		})
 
 		-- Trigger signature help automatically when typing '(' or ',' in insert mode
+		local signature_lock = false
+
 		vim.api.nvim_create_autocmd("InsertCharPre", {
 			pattern = "*",
 			callback = function()
 				local char = vim.v.char
-				if char == "(" or char == "," then
+				if (char == "(" or char == ",") and not signature_lock then
+					signature_lock = true
+
 					vim.defer_fn(function()
 						vim.lsp.buf.signature_help()
-					end, 1) -- delay slightly to allow char insertion
+						signature_lock = false
+					end, 100) -- تاخیر 100 میلی‌ثانیه کافی و امن است
 				end
 			end,
 		})
