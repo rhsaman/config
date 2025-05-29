@@ -12,6 +12,10 @@ return {
     -- import cmp-nvim-lsp plugin
     local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
+    vim.keymap.set("n", "<leader>i", function()
+      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+    end, { desc = "inlayHint" })
+
     -- used to enable autocompletion (assign to every lsp server config)
     local capabilities = cmp_nvim_lsp.default_capabilities()
 
@@ -20,10 +24,6 @@ return {
       if client.server_capabilities.documentFormattingProvider then
         client.server_capabilities.documentFormattingProvider = false
       end
-
-      vim.keymap.set("n", "<leader>i", function()
-        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-      end, { desc = "inlayHint" })
     end
 
     -- Change the Diagnostic symbols in the sign column (gutter)
