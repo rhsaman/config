@@ -32,7 +32,7 @@ opt.splitright = true -- split vertical window to the right
 opt.splitbelow = true -- split horizontal window to the bottom
 
 -- rust auto save
--- vim.g.rustfmt_autosave = 1
+vim.g.rustfmt_autosave = 1
 
 -- vim.g.python3_host_prog = "/Users/saman/Documents/code/music/ai/.venv/bin/python"
 
