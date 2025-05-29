@@ -9,7 +9,7 @@ return {
         tmux_autoclose_windows = true,
         excluded_filetypes = { "harpoon" },
         mark_branch = true,
-        tabline = true,
+        tabline = false,
         tabline_prefix = "  ",
         tabline_suffix = "  ",
       },
