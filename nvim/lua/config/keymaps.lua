@@ -60,5 +60,5 @@ keymap.set("n", "<C-n>", ':lua require("harpoon.ui").nav_next()<cr>', { desc = "
 keymap.set("n", "<C-p>", ':lua require("harpoon.ui").nav_prev()<cr>', { desc = "harpoon previous files" })
 
 -- quick fix
-keymap.set("n", "<S-n>", ":cnext<Cr>", { desc = "next quickfix" })
-keymap.set("n", "<S-p>", ":cprevious<Cr>", { desc = "next quickfix" })
+keymap.set("n", "<C-q>n", ":cnext<Cr>", { desc = "next quickfix" })
+keymap.set("n", "<C-q>p", ":cprevious<Cr>", { desc = "next quickfix" })
