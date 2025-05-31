@@ -8,7 +8,7 @@ return {
 	},
 	config = function()
 		-- import lspconfig plugin
-		local lspconfig = require("lspconfig")
+		require("lspconfig")
 
 		-- import cmp-nvim-lsp plugin
 		local cmp_nvim_lsp = require("cmp_nvim_lsp")
@@ -65,6 +65,16 @@ return {
 		vim.lsp.config("ts_ls", {
 			capabilities = capabilities,
 			on_attach = on_attach,
+			cmd = { "typescript-language-server", "--stdio" },
+			filetypes = {
+				"javascript",
+				"javascriptreact",
+				"javascript.jsx",
+				"typescript",
+				"typescriptreact",
+				"typescript.tsx",
+			},
+			root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
 			settings = {
 				typescript = {
 					inlayHints = {

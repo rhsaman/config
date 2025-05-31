@@ -58,7 +58,3 @@ keymap.set("n", "<leader>ha", ":lua require('harpoon.mark').add_file()<cr>", { d
 keymap.set("n", "<leader>ho", ":lua require('harpoon.ui').toggle_quick_menu()<cr>", { desc = "harpoon files" })
 keymap.set("n", "<C-n>", ':lua require("harpoon.ui").nav_next()<cr>', { desc = "harpoon next file" })
 keymap.set("n", "<C-p>", ':lua require("harpoon.ui").nav_prev()<cr>', { desc = "harpoon previous files" })
-
--- quick fix
-keymap.set("n", "<C-q>n", ":cnext<Cr>", { desc = "next quickfix" })
-keymap.set("n", "<C-q>p", ":cprevious<Cr>", { desc = "next quickfix" })
