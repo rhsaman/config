@@ -1,4 +1,3 @@
--- lsp
 return {
   "neovim/nvim-lspconfig",
   event = { "BufReadPre", "BufNewFile" },
@@ -7,23 +6,19 @@ return {
     { "antosha417/nvim-lsp-file-operations", config = true },
   },
   config = function()
-    -- import lspconfig plugin
-    require("lspconfig")
-
-    -- import cmp-nvim-lsp plugin
-    local cmp_nvim_lsp = require("cmp_nvim_lsp")
-
+    local capabilities = require("cmp_nvim_lsp").default_capabilities()
     vim.lsp.config("*", {
-      capabilities = {
-        textDocument = {
-          semanticTokens = {
-            multilineTokenSupport = true,
-          },
-        },
-      },
-      root_markers = { ".git" },
+      capabilities = capabilities,
     })
-    -- local capabilities = cmp_nvim_lsp.default_capabilities()
+
+    vim.api.nvim_create_autocmd("LspAttach", {
+      group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+      callback = function(ev)
+        local map = function(keys, func, desc)
+          vim.keymap.set("n", keys, func, { buffer = ev.buf, desc = "Lsp: " .. desc })
+        end
+      end,
+    })
 
     -- Change the Diagnostic symbols in the sign column (gutter)
     vim.diagnostic.config({
