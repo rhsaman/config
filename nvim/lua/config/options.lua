@@ -37,18 +37,18 @@ vim.g.rustfmt_autosave = 1
 -- vim.g.python3_host_prog = "/Users/saman/Documents/code/music/ai/.venv/bin/python"
 
 -- workdir
-local function setup_project_root()
-  local path = vim.fn.expand("%:p:h")
-  local git_dir = vim.fn.finddir(".git", path .. ";")
-  if git_dir ~= "" then
-    local root = vim.fn.fnamemodify(git_dir, ":h")
-    vim.cmd("cd " .. root)
-  else
-    vim.o.autochdir = true
-    print("Git not found: autochdir enabled")
-  end
-end
-setup_project_root()
+-- local function setup_project_root()
+--   local path = vim.fn.expand("%:p:h")
+--   local git_dir = vim.fn.finddir(".git", path .. ";")
+--   if git_dir ~= "" then
+--     local root = vim.fn.fnamemodify(git_dir, ":h")
+--     vim.cmd("cd " .. root)
+--   else
+--     vim.o.autochdir = true
+--     print("Git not found: autochdir enabled")
+--   end
+-- end
+-- setup_project_root()
 
 -- fold
 vim.api.nvim_create_autocmd("FileType", {
