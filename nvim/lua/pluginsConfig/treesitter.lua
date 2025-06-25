@@ -22,6 +22,7 @@ return {
           enable = true,
         },
         ensure_installed = {
+          "tsx",
           "json",
           "javascript",
           "typescript",
