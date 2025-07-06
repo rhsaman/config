@@ -24,6 +24,18 @@ return {
 							},
 						},
 					})
+
+					vim.api.nvim_create_autocmd("BufEnter", {
+						pattern = "*",
+						callback = function()
+							local win = vim.api.nvim_get_current_win()
+							local buf = vim.api.nvim_win_get_buf(win)
+							local ft = vim.bo[buf].filetype
+							if ft ~= "neo-tree" and ft ~= "neo-tree-popup" then
+								vim.cmd("Neotree close")
+							end
+						end,
+					})
 				end,
 			},
 		},
@@ -49,7 +61,7 @@ return {
 			-- vim.fn.sign_define("DiagnosticSignInfo", { text = " ", texthl = "DiagnosticSignInfo" })
 			-- vim.fn.sign_define("DiagnosticSignHint", { text = "󰌵", texthl = "DiagnosticSignHint" })
 
-			vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal<CR>")
+			vim.keymap.set("n", "<leader>e", "<Cmd>Neotree toggle<CR>")
 
 			require("neo-tree").setup({
 				close_if_last_window = false, -- Close Neo-tree if it is the last window left in the tab
@@ -246,7 +258,7 @@ return {
 						hide_gitignored = true,
 						hide_hidden = true, -- only works on Windows for hidden files/directories
 						hide_by_name = {
-							--"node_modules"
+							"node_modules",
 						},
 						hide_by_pattern = { -- uses glob style patterns
 							--"*.meta",
@@ -259,7 +271,7 @@ return {
 							--".env*",
 						},
 						never_show = { -- remains hidden even if visible is toggled to true, this overrides always_show
-							--".DS_Store",
+							".DS_Store",
 							--"thumbs.db"
 						},
 						never_show_by_pattern = { -- uses glob style patterns
@@ -267,12 +279,12 @@ return {
 						},
 					},
 					follow_current_file = {
-						enabled = false, -- This will find and focus the file in the active buffer every time
+						enabled = true, -- This will find and focus the file in the active buffer every time
 						--               -- the current file is changed while the tree is open.
 						leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
 					},
 					group_empty_dirs = false, -- when true, empty folders will be grouped together
-					hijack_netrw_behavior = "open_default", -- netrw disabled, opening a directory opens neo-tree
+					hijack_netrw_behavior = "open_current", -- netrw disabled, opening a directory opens neo-tree
 					-- in whatever position is specified in window.position
 					-- "open_current",  -- netrw disabled, opening a directory opens within the
 					-- window like netrw would, regardless of window.position
