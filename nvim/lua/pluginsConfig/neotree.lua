@@ -25,17 +25,17 @@ return {
 						},
 					})
 
-					vim.api.nvim_create_autocmd("BufEnter", {
-						pattern = "*",
-						callback = function()
-							local win = vim.api.nvim_get_current_win()
-							local buf = vim.api.nvim_win_get_buf(win)
-							local ft = vim.bo[buf].filetype
-							if ft ~= "neo-tree" and ft ~= "neo-tree-popup" then
-								vim.cmd("Neotree close")
-							end
-						end,
-					})
+					-- vim.api.nvim_create_autocmd("BufEnter", {
+					-- 	pattern = "*",
+					-- 	callback = function()
+					-- 		local win = vim.api.nvim_get_current_win()
+					-- 		local buf = vim.api.nvim_win_get_buf(win)
+					-- 		local ft = vim.bo[buf].filetype
+					-- 		if ft ~= "neo-tree" and ft ~= "neo-tree-popup" then
+					-- 			vim.cmd("Neotree close")
+					-- 		end
+					-- 	end,
+					-- })
 				end,
 			},
 		},
@@ -61,7 +61,7 @@ return {
 			-- vim.fn.sign_define("DiagnosticSignInfo", { text = " ", texthl = "DiagnosticSignInfo" })
 			-- vim.fn.sign_define("DiagnosticSignHint", { text = "󰌵", texthl = "DiagnosticSignHint" })
 
-			vim.keymap.set("n", "<leader>e", "<Cmd>Neotree toggle<CR>")
+			vim.keymap.set("n", "<leader>e", "<Cmd>Neotree reveal float<CR>")
 
 			require("neo-tree").setup({
 				close_if_last_window = false, -- Close Neo-tree if it is the last window left in the tab
