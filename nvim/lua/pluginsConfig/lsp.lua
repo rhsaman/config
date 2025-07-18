@@ -19,6 +19,13 @@ return {
 				end
 			end,
 		})
+		-- Set up custom highlighting for signature help
+		vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", {
+			bg = "#3e4451",
+			fg = "#e06c75",
+			bold = true,
+			underline = true,
+		})
 
 		-- Change the Diagnostic symbols in the sign column (gutter)
 		vim.diagnostic.config({
