@@ -11,6 +11,15 @@ return {
 			capabilities = capabilities,
 		})
 
+		vim.api.nvim_create_autocmd("LspAttach", {
+			group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+			callback = function(ev)
+				local map = function(keys, func, desc)
+					vim.keymap.set("n", keys, func, { buffer = ev.buf, desc = "Lsp: " .. desc })
+				end
+			end,
+		})
+
 		-- Change the Diagnostic symbols in the sign column (gutter)
 		vim.diagnostic.config({
 			signs = {
@@ -22,34 +31,6 @@ return {
 				},
 			},
 			virtual_text = { current_line = true },
-			underline = true,
-		})
-
-		-- Configure signature help display
-		vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-			border = "rounded",
-			close_events = { "CursorMoved", "BufHidden", "InsertCharPre" },
-			focusable = false,
-			relative = "cursor",
-		})
-
-		-- Set up custom highlighting for signature help
-		vim.api.nvim_create_autocmd("ColorScheme", {
-			callback = function()
-				vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", {
-					bg = "#3e4451",
-					fg = "#e06c75",
-					bold = true,
-					underline = true,
-				})
-			end,
-		})
-
-		-- Apply the highlight immediately
-		vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", {
-			bg = "#3e4451",
-			fg = "#e06c75",
-			bold = true,
 			underline = true,
 		})
 
@@ -65,28 +46,7 @@ return {
 					vim.defer_fn(function()
 						vim.lsp.buf.signature_help()
 						signature_lock = false
-					end, 100)
-				end
-			end,
-		})
-
-		-- Auto-trigger signature help when moving cursor in insert mode
-		vim.api.nvim_create_autocmd("CursorMovedI", {
-			pattern = "*",
-			callback = function()
-				local line = vim.api.nvim_get_current_line()
-				local col = vim.api.nvim_win_get_cursor(0)[2]
-				local char_before = line:sub(col, col)
-				local char_after = line:sub(col + 1, col + 1)
-
-				-- Check if we're inside function parameters
-				if
-					line:find("[", 1, true)
-					and (char_before == "," or char_after == "," or char_before:match("%w") or char_after:match("%w"))
-				then
-					vim.defer_fn(function()
-						vim.lsp.buf.signature_help()
-					end, 50)
+					end, 100) -- تاخیر 100 میلی‌ثانیه کافی و امن است
 				end
 			end,
 		})
