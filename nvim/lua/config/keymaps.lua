@@ -127,6 +127,48 @@ vim.api.nvim_set_keymap(
   { noremap = true, silent = true, desc = "Focus Ollama Chat History" }
 )
 
+-- Send selection for code editing with accept/deny options
+vim.api.nvim_set_keymap(
+  "v",
+  "<leader>oe",
+  ':<C-U>lua require("config.ollama_chat").send_selection_to_chat_for_editing()<CR>',
+  { noremap = true, silent = true, desc = "Send selection to Ollama for editing with accept/deny" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>oe",
+  ':lua require("config.ollama_chat").send_selection_to_chat_for_editing()<CR>',
+  { noremap = true, silent = true, desc = "Send current line to Ollama for editing with accept/deny" }
+)
+
+-- Send selection for adding debug code
+vim.api.nvim_set_keymap(
+  "v",
+  "<leader>og",
+  ':<C-U>lua require("config.ollama_chat").send_selection_to_chat_for_debug()<CR>',
+  { noremap = true, silent = true, desc = "Send selection to Ollama for adding debug code" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>og",
+  ':lua require("config.ollama_chat").send_selection_to_chat_for_debug()<CR>',
+  { noremap = true, silent = true, desc = "Send current line to Ollama for adding debug code" }
+)
+
+-- Accept/Deny code edits (global keybindings)
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>oa",
+  ':lua require("config.ollama_chat").accept_code_edit()<CR>',
+  { noremap = true, silent = true, desc = "Accept pending Ollama code edit" }
+)
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>or",
+  ':lua require("config.ollama_chat").deny_code_edit()<CR>',
+  { noremap = true, silent = true, desc = "Reject/deny pending Ollama code edit" }
+)
+
 -- Debug selection capture (temporary)
 vim.api.nvim_set_keymap(
   "v",
@@ -139,4 +181,12 @@ vim.api.nvim_set_keymap(
   "<leader>od",
   ':lua require("config.ollama_chat").debug_selection()<CR>',
   { noremap = true, silent = false, desc = "Debug selection capture" }
+)
+
+-- Debug LSP diagnostics (temporary)
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>ol",
+  ':lua require("config.ollama_chat").debug_lsp_diagnostics()<CR>',
+  { noremap = true, silent = false, desc = "Debug LSP diagnostics detection" }
 )
