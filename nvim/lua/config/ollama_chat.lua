@@ -1,4 +1,102 @@
+-- AI Chat Plugin with Multi-Provider Support
+-- Features:
+-- - Ollama (local AI)
+-- - OpenAI GPT-4
+-- - Anthropic Claude
+-- - Grok (xAI) - Free API
+-- - Provider selection popup: <leader>op
+-- - Code editing with AI suggestions
+-- - LSP diagnostics integration
+
 local M = {}
+
+local clean_code_prompt = [[
+You are an expert programmer. Rewrite the code I provide in a clean and concise way,
+optimizing structure and formatting, and adding comments if necessary.
+Do not write any explanations, analysis, or anything I didn't ask for.
+Only return the improved, cleaned-up version of the code.
+]]
+
+-- API Provider Configuration
+local providers = {
+	ollama = {
+		name = "Ollama",
+		model = "qwen3:4b-instruct-2507-q4_K_M",
+		endpoint = nil, -- Local
+		api_key = nil, -- Not needed for local
+	},
+	openai = {
+		name = "OpenAI",
+		model = "gpt-4",
+		endpoint = "https://api.openai.com/v1/chat/completions",
+		api_key = os.getenv("OPENAI_API_KEY"),
+	},
+	cloud = {
+		name = "Anthropic Claude",
+		model = "claude-3-sonnet-20240229",
+		endpoint = "https://api.anthropic.com/v1/messages",
+		api_key = os.getenv("ANTHROPIC_API_KEY"),
+	},
+	grok = {
+		name = "Grok (xAI)",
+		model = "grok-beta",
+		endpoint = "https://api.x.ai/v1/chat/completions",
+		api_key = os.getenv("GROK_API_KEY"),
+	},
+}
+
+-- Current active provider
+local current_provider = "ollama"
+
+-- Provider persistence
+local provider_config_file = vim.fn.stdpath('data') .. '/ollama_chat_provider.json'
+
+-- Load saved provider from file
+function M.load_saved_provider()
+	local file = io.open(provider_config_file, 'r')
+	if file then
+		local content = file:read('*all')
+		file:close()
+
+		local success, data = pcall(vim.json.decode, content)
+		if success and data and data.provider and providers[data.provider] then
+			-- Validate that the provider's API key is still available
+			local valid, error_msg = M.validate_api_key(data.provider)
+			if valid then
+				current_provider = data.provider
+				return true
+			else
+				print("Warning: Saved provider '" .. data.provider .. "' is no longer available: " .. error_msg)
+				print("Falling back to Ollama")
+				return false
+			end
+		else
+			return false
+		end
+	else
+		return false
+	end
+end
+
+-- Save current provider to file
+function M.save_current_provider()
+	local data = {
+		provider = current_provider,
+		timestamp = os.time(),
+		version = "1.0"
+	}
+
+	local success, encoded = pcall(vim.json.encode, data)
+	if success then
+		local file = io.open(provider_config_file, 'w')
+		if file then
+			file:write(encoded)
+			file:close()
+			return true
+		end
+	end
+	return false
+end
 
 -- Chat window state
 local chat_win = nil
@@ -6,7 +104,7 @@ local chat_buf = nil
 local input_buf = nil
 local input_win = nil
 local chat_history = {}
-local current_job = nil -- Track current ollama job
+local current_job = nil -- Track current API job
 
 -- Code edit state
 local pending_edit = {
@@ -18,6 +116,30 @@ local pending_edit = {
 	suggested_code = nil,
 	response_id = nil,
 }
+
+-- Module state
+M._provider_initialized = false
+M.provider_popup = nil
+
+-- Validate API key for a provider
+function M.validate_api_key(provider)
+	if provider == "ollama" then
+		return true
+	elseif provider == "openai" then
+		if not providers.openai.api_key or providers.openai.api_key == "" then
+			return false, "OpenAI API key not found. Set OPENAI_API_KEY environment variable."
+		end
+	elseif provider == "cloud" then
+		if not providers.cloud.api_key or providers.cloud.api_key == "" then
+			return false, "Anthropic API key not found. Set ANTHROPIC_API_KEY environment variable."
+		end
+	elseif provider == "grok" then
+		if not providers.grok.api_key or providers.grok.api_key == "" then
+			return false, "Grok API key not found. Set GROK_API_KEY environment variable."
+		end
+	end
+	return true
+end
 
 -- Extract code from response (supports code blocks and inline code)
 function M.extract_code_from_response(response)
@@ -61,39 +183,6 @@ function M.is_code_edit_response(response)
 	return M.extract_code_from_response(response) ~= nil
 end
 
--- Store the current selection context for later editing
-function M.store_selection_context()
-	local buf = vim.api.nvim_get_current_buf()
-	local vstart = vim.fn.getpos("'<")
-	local vend = vim.fn.getpos(">")
-
-	-- Check if we have a valid visual selection
-	if vstart[2] > 0 and vend[2] > 0 and (vstart[2] ~= vend[2] or vstart[3] ~= vend[3]) then
-		-- We have a valid visual selection
-		pending_edit.original_buf = buf
-		pending_edit.original_start_line = vstart[2]
-		pending_edit.original_end_line = vend[2]
-		pending_edit.original_start_col = vstart[3]
-		pending_edit.original_end_col = vend[3]
-
-		print("Debug: Stored visual selection from line " .. vstart[2] .. " to " .. vend[2])
-	else
-		-- No visual selection, use current line
-		local current_line = vim.api.nvim_win_get_cursor(0)[1]
-		local line_text = vim.api.nvim_get_current_line()
-
-		pending_edit.original_buf = buf
-		pending_edit.original_start_line = current_line
-		pending_edit.original_end_line = current_line
-		pending_edit.original_start_col = 1
-		pending_edit.original_end_col = #line_text
-
-		print("Debug: Stored current line " .. current_line .. " (no visual selection)")
-	end
-
-	return buf, vstart, vend
-end
-
 -- گرفتن متن انتخابی یا خط جاری
 function M.get_selection()
 	-- First try to get visual selection if we were just in visual mode
@@ -125,7 +214,36 @@ function M.get_selection()
 	end
 end
 
--- اجرای Ollama async (truly async using jobstart)
+-- Store the current selection context for later editing
+function M.store_selection_context()
+	local buf = vim.api.nvim_get_current_buf()
+	local vstart = vim.fn.getpos("'<")
+	local vend = vim.fn.getpos("'>")
+
+	-- Check if we have a valid visual selection
+	if vstart[2] > 0 and vend[2] > 0 and (vstart[2] ~= vend[2] or vstart[3] ~= vend[3]) then
+		-- We have a valid visual selection
+		pending_edit.original_buf = buf
+		pending_edit.original_start_line = vstart[2]
+		pending_edit.original_end_line = vend[2]
+		pending_edit.original_start_col = vstart[3]
+		pending_edit.original_end_col = vend[3]
+	else
+		-- No visual selection, use current line
+		local current_line = vim.api.nvim_win_get_cursor(0)[1]
+		local line_text = vim.api.nvim_get_current_line()
+
+		pending_edit.original_buf = buf
+		pending_edit.original_start_line = current_line
+		pending_edit.original_end_line = current_line
+		pending_edit.original_start_col = 1
+		pending_edit.original_end_col = #line_text
+	end
+
+	return buf, vstart, vend
+end
+
+-- اجرای Ollama API async (truly async using jobstart)
 function M.query_ollama_async(text, callback)
 	-- Stop current job if running
 	if current_job and vim.fn.jobstop then
@@ -145,11 +263,30 @@ function M.query_ollama_async(text, callback)
 	local temp_file = vim.fn.tempname()
 	vim.fn.writefile({ clean_text }, temp_file)
 
-	local cmd =
-		{ "sh", "-c", string.format('cat "%s" | ollama run qwen3:4b-instruct-2507-q4_K_M 2>/dev/null', temp_file) }
+	local cmd = {
+		"sh", "-c", string.format('timeout 15s cat "%s" | ollama run qwen3:4b-instruct-2507-q4_K_M 2>/dev/null | head -10', temp_file)
+	}
 
 	local response_lines = {}
 	local callback_called = false
+
+	-- Add timeout to prevent hanging
+	vim.defer_fn(function()
+		if current_job and not callback_called then
+			vim.fn.jobstop(current_job)
+			current_job = nil
+			if not callback_called then
+				callback_called = true
+				print("Ollama job timed out, trying fallback...")
+				local fallback_response = M.try_sync_ollama(clean_text)
+				if fallback_response then
+					callback(fallback_response .. " (timed out, via fallback)")
+				else
+					callback("Ollama request timed out")
+				end
+			end
+		end
+	end, 10000) -- 10 second timeout
 
 	current_job = vim.fn.jobstart(cmd, {
 		stdout_buffered = true,
@@ -194,21 +331,359 @@ function M.query_ollama_async(text, callback)
 						-- Clean up excessive whitespace but preserve structure
 						final_response = final_response:gsub("\n\n\n+", "\n\n"):gsub("^%s*", ""):gsub("%s*$", "")
 
-						-- Limit response length if too long
-						if #final_response > 2000 then
-							final_response = final_response:sub(1, 2000) .. "\n\n[Response truncated - too long]"
-						end
-
 						callback(final_response)
 					else
-						callback("No response from Ollama")
+						-- Try synchronous fallback
+						print("Ollama async failed, trying synchronous fallback...")
+						local fallback_response = M.try_sync_ollama(clean_text)
+						if fallback_response then
+							callback(fallback_response .. " (via fallback)")
+						else
+							callback("No response from Ollama (empty response)")
+						end
 					end
 				else
-					callback("Command failed with exit code: " .. exit_code)
+					-- Try synchronous fallback on failure
+					print("Ollama command failed (exit code: " .. exit_code .. "), trying synchronous fallback...")
+					local fallback_response = M.try_sync_ollama(clean_text)
+					if fallback_response then
+						callback(fallback_response .. " (via fallback)")
+					else
+						callback("Ollama command failed with exit code: " .. exit_code)
+					end
 				end
 			end
 		end,
 	})
+end
+
+-- اجرای OpenAI API async
+function M.query_openai_async(text, callback)
+	-- Check if API key is available
+	if not providers.openai.api_key then
+		callback("Error: OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+		return
+	end
+
+	-- Clean and prepare text
+	local clean_text = text:gsub('"', '\\"'):gsub("\n", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+
+	if clean_text == "" then
+		callback("Error: Empty text provided")
+		return
+	end
+
+	-- Create request payload
+	local payload = {
+		model = providers.openai.model,
+		messages = {
+			{ role = "user", content = clean_text }
+		},
+		max_tokens = 4096,
+		temperature = 0.7
+	}
+
+	local json_payload = vim.json.encode(payload)
+
+	-- Create temporary file for payload
+	local temp_file = vim.fn.tempname()
+	vim.fn.writefile({ json_payload }, temp_file)
+
+	local cmd = {
+		"curl",
+		"-s",
+		"-X", "POST",
+		"-H", "Content-Type: application/json",
+		"-H", "Authorization: Bearer " .. providers.openai.api_key,
+		"-d", "@" .. temp_file,
+		providers.openai.endpoint
+	}
+
+	local response_lines = {}
+	local callback_called = false
+
+	current_job = vim.fn.jobstart(cmd, {
+		stdout_buffered = true,
+		on_stdout = function(_, data)
+			if data and #data > 0 then
+				for _, line in ipairs(data) do
+					if line and line ~= "" then
+						table.insert(response_lines, line)
+					end
+				end
+			end
+		end,
+		on_stderr = function(_, _)
+			-- Silently handle errors
+		end,
+		on_exit = function(_, exit_code)
+			-- Clean up temp file
+			vim.fn.delete(temp_file)
+
+			if not callback_called then
+				callback_called = true
+
+				if exit_code == 0 then
+					if #response_lines > 0 then
+						local response_json = table.concat(response_lines, "")
+						local success, response_data = pcall(vim.json.decode, response_json)
+
+						if success and response_data.choices and response_data.choices[1] then
+							local content = response_data.choices[1].message.content
+							if content then
+								callback(content)
+							else
+								callback("No content in OpenAI response")
+							end
+						else
+							callback("Failed to parse OpenAI response: " .. response_json)
+						end
+					else
+						callback("No response from OpenAI")
+					end
+				else
+					callback("OpenAI API request failed with exit code: " .. exit_code)
+				end
+			end
+		end,
+	})
+end
+
+-- اجرای Cloud API (Anthropic Claude) async
+function M.query_cloud_async(text, callback)
+	-- Check if API key is available
+	if not providers.cloud.api_key then
+		callback("Error: Anthropic API key not found. Set ANTHROPIC_API_KEY environment variable.")
+		return
+	end
+
+	-- Clean and prepare text
+	local clean_text = text:gsub('"', '\\"'):gsub("\n", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+
+	if clean_text == "" then
+		callback("Error: Empty text provided")
+		return
+	end
+
+	-- Create request payload for Anthropic
+	local payload = {
+		model = providers.cloud.model,
+		max_tokens = 4096,
+		messages = {
+			{ role = "user", content = clean_text }
+		}
+	}
+
+	local json_payload = vim.json.encode(payload)
+
+	-- Create temporary file for payload
+	local temp_file = vim.fn.tempname()
+	vim.fn.writefile({ json_payload }, temp_file)
+
+	local cmd = {
+		"curl",
+		"-s",
+		"-X", "POST",
+		"-H", "Content-Type: application/json",
+		"-H", "x-api-key: " .. providers.cloud.api_key,
+		"-H", "anthropic-version: 2023-06-01",
+		"-d", "@" .. temp_file,
+		providers.cloud.endpoint
+	}
+
+	local response_lines = {}
+	local callback_called = false
+
+	current_job = vim.fn.jobstart(cmd, {
+		stdout_buffered = true,
+		on_stdout = function(_, data)
+			if data and #data > 0 then
+				for _, line in ipairs(data) do
+					if line and line ~= "" then
+						table.insert(response_lines, line)
+					end
+				end
+			end
+		end,
+		on_stderr = function(_, _)
+			-- Silently handle errors
+		end,
+		on_exit = function(_, exit_code)
+			-- Clean up temp file
+			vim.fn.delete(temp_file)
+
+			if not callback_called then
+				callback_called = true
+
+				if exit_code == 0 then
+					if #response_lines > 0 then
+						local response_json = table.concat(response_lines, "")
+						local success, response_data = pcall(vim.json.decode, response_json)
+
+						if success and response_data.content and response_data.content[1] then
+							local content = response_data.content[1].text
+							if content then
+								callback(content)
+							else
+								callback("No content in Claude response")
+							end
+						else
+							callback("Failed to parse Claude response: " .. response_json)
+						end
+					else
+						callback("No response from Claude")
+					end
+				else
+					callback("Claude API request failed with exit code: " .. exit_code)
+				end
+			end
+		end,
+	})
+end
+
+-- اجرای Grok API async (xAI)
+function M.query_grok_async(text, callback)
+	-- Check if API key is available
+	if not providers.grok.api_key then
+		callback("Error: Grok API key not found. Set GROK_API_KEY environment variable.")
+		return
+	end
+
+	-- Clean and prepare text
+	local clean_text = text:gsub('"', '\\"'):gsub("\n", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+
+	if clean_text == "" then
+		callback("Error: Empty text provided")
+		return
+	end
+
+	-- Create request payload (similar to OpenAI format)
+	local payload = {
+		model = providers.grok.model,
+		messages = {
+			{ role = "user", content = clean_text }
+		},
+		max_tokens = 4096,
+		temperature = 0.7
+	}
+
+	local json_payload = vim.json.encode(payload)
+
+	-- Create temporary file for payload
+	local temp_file = vim.fn.tempname()
+	vim.fn.writefile({ json_payload }, temp_file)
+
+	local cmd = {
+		"curl",
+		"-s",
+		"-X", "POST",
+		"-H", "Content-Type: application/json",
+		"-H", "Authorization: Bearer " .. providers.grok.api_key,
+		"-d", "@" .. temp_file,
+		providers.grok.endpoint
+	}
+
+	local response_lines = {}
+	local callback_called = false
+
+	current_job = vim.fn.jobstart(cmd, {
+		stdout_buffered = true,
+		on_stdout = function(_, data)
+			if data and #data > 0 then
+				for _, line in ipairs(data) do
+					if line and line ~= "" then
+						table.insert(response_lines, line)
+					end
+				end
+			end
+		end,
+		on_stderr = function(_, _)
+			-- Silently handle errors
+		end,
+		on_exit = function(_, exit_code)
+			-- Clean up temp file
+			vim.fn.delete(temp_file)
+
+			if not callback_called then
+				callback_called = true
+
+				if exit_code == 0 then
+					if #response_lines > 0 then
+						local response_json = table.concat(response_lines, "")
+						local success, response_data = pcall(vim.json.decode, response_json)
+
+						if success and response_data.choices and response_data.choices[1] then
+							local content = response_data.choices[1].message.content
+							if content then
+								callback(content)
+							else
+								callback("No content in Grok response")
+							end
+						else
+							callback("Failed to parse Grok response: " .. response_json)
+						end
+					else
+						callback("No response from Grok")
+					end
+				else
+					callback("Grok API request failed with exit code: " .. exit_code)
+				end
+			end
+		end,
+	})
+end
+
+-- Synchronous fallback for Ollama queries
+function M.try_sync_ollama(text)
+	local temp_file = vim.fn.tempname()
+	vim.fn.writefile({ text }, temp_file)
+
+	local cmd = string.format('timeout 10s cat "%s" | ollama run qwen3:4b-instruct-2507-q4_K_M 2>/dev/null | head -5', temp_file)
+	local handle = io.popen(cmd)
+
+	if handle then
+		local result = handle:read("*a")
+		handle:close()
+		vim.fn.delete(temp_file)
+
+		if result and result ~= "" then
+			-- Clean up the response
+			result = result:gsub("\n+", " "):gsub("^%s*", ""):gsub("%s*$", "")
+			if #result > 500 then
+				result = result:sub(1, 500) .. "..."
+			end
+			return result
+		end
+	end
+
+	vim.fn.delete(temp_file)
+	return nil
+end
+
+-- Get current provider (for testing/debugging)
+function M.get_current_provider()
+	return current_provider
+end
+
+-- Unified query function that routes to the current provider
+function M.query_ai_async(text, callback)
+	local valid, error_msg = M.validate_api_key(current_provider)
+	if not valid then
+		callback("Error: " .. error_msg)
+		return
+	end
+
+	if current_provider == "ollama" then
+		M.query_ollama_async(text, callback)
+	elseif current_provider == "openai" then
+		M.query_openai_async(text, callback)
+	elseif current_provider == "cloud" then
+		M.query_cloud_async(text, callback)
+	elseif current_provider == "grok" then
+		M.query_grok_async(text, callback)
+	else
+		callback("Error: Unknown provider '" .. current_provider .. "'")
+	end
 end
 
 -- نمایش پاسخ در floating window
@@ -240,23 +715,14 @@ function M.accept_code_edit()
 		or not pending_edit.suggested_code
 		or not vim.api.nvim_buf_is_valid(pending_edit.original_buf)
 	then
-		print("No pending code edit to accept")
 		return
 	end
 
 	-- Remember current window to return to it later
 	local current_win = vim.api.nvim_get_current_win()
 
-	-- Debug: print ALL pending edit info
-	print("Debug: Raw pending_edit values:")
-	print("  original_start_line: " .. tostring(pending_edit.original_start_line))
-	print("  original_end_line: " .. tostring(pending_edit.original_end_line))
-	print("  original_start_col: " .. tostring(pending_edit.original_start_col))
-	print("  original_end_col: " .. tostring(pending_edit.original_end_col))
-
 	-- Get buffer info for validation
 	local buf_line_count = vim.api.nvim_buf_line_count(pending_edit.original_buf)
-	print("  buffer line count: " .. buf_line_count)
 
 	-- Apply the edit to the original buffer (without switching view)
 	local code_lines = vim.split(pending_edit.suggested_code, "\n")
@@ -276,62 +742,44 @@ function M.accept_code_edit()
 		start_line, end_line = end_line, start_line
 	end
 
-	print("Debug: Validated values:")
-	print("  start_line: " .. start_line .. ", end_line: " .. end_line)
-	print("  start_col: " .. start_col .. ", end_col: " .. end_col)
+	-- Use nvim_buf_set_text for precise text replacement
+	local start_row = start_line - 1
+	local start_col_0 = start_col - 1
+	local end_row = end_line - 1
+	local end_col_0 = end_col - 1
 
-	-- Calculate 0-based indices for nvim_buf_set_lines
-	local zero_start = start_line - 1 -- 0-based start
-	local zero_end = start_line -- exclusive end (1-based)
-
-	if start_line ~= end_line then
-		-- Multi-line case: end should be the line AFTER the last line to replace
-		zero_end = end_line
+	-- Validate buffer is modifiable
+	if not vim.bo[pending_edit.original_buf].modifiable then
+		return
 	end
 
-	print("Debug: nvim_buf_set_lines params: " .. zero_start .. ", " .. zero_end)
+	-- Validate positions are within bounds
+	local buf_line_count = vim.api.nvim_buf_line_count(pending_edit.original_buf)
+	if start_row < 0 or start_row >= buf_line_count or end_row < 0 or end_row >= buf_line_count then
+		return
+	end
 
-	-- Validate the indices before calling nvim_buf_set_lines
-	if zero_start < 0 or zero_start > buf_line_count or zero_end < zero_start or zero_end > buf_line_count then
-		print(
-			"Error: Invalid line indices. start="
-				.. zero_start
-				.. ", end="
-				.. zero_end
-				.. ", buf_lines="
-				.. buf_line_count
-		)
+	-- Get the line lengths to validate column positions
+	local start_line_text = vim.api.nvim_buf_get_lines(pending_edit.original_buf, start_row, start_row + 1, false)[1]
+		or ""
+	local end_line_text = vim.api.nvim_buf_get_lines(pending_edit.original_buf, end_row, end_row + 1, false)[1] or ""
+
+	if start_col_0 < 0 or start_col_0 > #start_line_text then
+		return
+	end
+
+	-- For end_col, since it's exclusive, it can be equal to line length
+	if end_col_0 < 0 or end_col_0 > #end_line_text then
 		return
 	end
 
 	-- Replace the selection with the new code
-	if start_line == end_line then
-		-- Single line replacement, but the suggested code might be multi-line
-		local line = vim.api.nvim_buf_get_lines(pending_edit.original_buf, zero_start, zero_end, false)[1] or ""
-		local prefix = line:sub(1, start_col - 1)
-		local suffix = line:sub(end_col + 1)
+	local success, err = pcall(function()
+		vim.api.nvim_buf_set_text(pending_edit.original_buf, start_row, start_col_0, end_row, end_col_0, code_lines)
+	end)
 
-		if #code_lines == 1 then
-			-- Single line suggested code - simple replacement
-			local new_line = prefix .. code_lines[1] .. suffix
-			vim.api.nvim_buf_set_lines(pending_edit.original_buf, zero_start, zero_end, false, { new_line })
-		else
-			-- Multi-line suggested code replacing a single line selection
-			local new_lines = {}
-			-- First line: prefix + first line of code
-			table.insert(new_lines, prefix .. code_lines[1])
-			-- Middle lines: just the code lines
-			for i = 2, #code_lines - 1 do
-				table.insert(new_lines, code_lines[i])
-			end
-			-- Last line: last line of code + suffix
-			table.insert(new_lines, code_lines[#code_lines] .. suffix)
-
-			vim.api.nvim_buf_set_lines(pending_edit.original_buf, zero_start, zero_end, false, new_lines)
-		end
-	else
-		-- Multi-line replacement
-		vim.api.nvim_buf_set_lines(pending_edit.original_buf, zero_start, zero_end, false, code_lines)
+	if not success then
+		return
 	end
 
 	-- Clear pending edit
@@ -345,7 +793,7 @@ function M.accept_code_edit()
 		response_id = nil,
 	}
 
-	-- Remove accept/deny options from chat
+	-- Keep the AI response in chat, just remove accept/deny options
 	M.clear_edit_options()
 
 	-- Stay in current window (don't switch to original buffer)
@@ -358,8 +806,6 @@ function M.accept_code_edit()
 		vim.api.nvim_set_current_win(input_win)
 		vim.cmd("startinsert")
 	end
-
-	print("Code edit applied successfully! (Original file updated in background)")
 end
 
 -- Deny code edit
@@ -377,17 +823,15 @@ function M.deny_code_edit()
 
 	-- Remove accept/deny options from chat
 	M.clear_edit_options()
-
-	print("Code edit rejected.")
 end
 
--- Clear edit options from chat window
+-- Clear edit options from chat window (keeps AI response, removes only options)
 function M.clear_edit_options()
 	if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
 		vim.api.nvim_set_option_value("modifiable", true, { buf = chat_buf })
 		local lines = vim.api.nvim_buf_get_lines(chat_buf, 0, -1, false)
 
-		-- Find and remove accept/deny lines
+		-- Remove only the accept/deny option lines, keep everything else
 		local new_lines = {}
 		for _, line in ipairs(lines) do
 			if not line:match("^%[ACCEPT%]") and not line:match("^%[DENY%]") and not line:match("^>>> Press") then
@@ -445,8 +889,22 @@ function M.add_to_chat(message, is_user)
 	end
 end
 
+-- Initialize provider (load saved or use default)
+function M.initialize_provider()
+	if not M.load_saved_provider() then
+		-- If no saved provider or invalid, use default
+		current_provider = "ollama"
+	end
+end
+
 -- Create or show chat window as resizable panes
 function M.toggle_chat_window()
+	-- Initialize provider on first use
+	if not M._provider_initialized then
+		M.initialize_provider()
+		M._provider_initialized = true
+	end
+
 	-- Check if chat windows exist and are valid
 	local chat_exists = chat_win and vim.api.nvim_win_is_valid(chat_win)
 	local input_exists = input_win and vim.api.nvim_win_is_valid(input_win)
@@ -470,11 +928,24 @@ function M.toggle_chat_window()
 		vim.bo[chat_buf].buftype = "nofile"
 		vim.bo[chat_buf].swapfile = false
 		vim.bo[chat_buf].filetype = "markdown"
-		vim.api.nvim_buf_set_name(chat_buf, "[Ollama Chat]")
+		vim.api.nvim_buf_set_name(chat_buf, "[" .. providers[current_provider].name .. " Chat]")
 
 		-- Add welcome message
-		local welcome = "=== Ollama Chat ==="
-		vim.api.nvim_buf_set_lines(chat_buf, 0, -1, false, { welcome, "" })
+		local welcome = "=== " .. providers[current_provider].name .. " Chat ==="
+		local help_text = {
+			"Provider selection: <leader>op (popup menu)",
+			"Reset to default: <leader>pd (Ollama)",
+			"Provider status: <leader>ps | Config info: <leader>pi",
+			"Legacy switching: <leader>po (Ollama), <leader>pg (GPT), <leader>pc (Claude), <leader>pk (Grok)",
+			"Accept/Deny edits: 'a' / 'd'",
+			"💾 Provider preference is automatically saved",
+			"",
+		}
+		local lines = { welcome, "" }
+		for _, line in ipairs(help_text) do
+			table.insert(lines, line)
+		end
+		vim.api.nvim_buf_set_lines(chat_buf, 0, -1, false, lines)
 		vim.bo[chat_buf].modifiable = false
 	end
 
@@ -488,7 +959,7 @@ function M.toggle_chat_window()
 	end
 
 	-- Create vertical split on the right (40% width)
-	vim.cmd("rightbelow 40vnew")
+	vim.cmd("rightbelow 50vnew")
 	chat_win = vim.api.nvim_get_current_win()
 	vim.api.nvim_win_set_buf(chat_win, chat_buf)
 
@@ -519,6 +990,42 @@ function M.toggle_chat_window()
 		":lua require('config.ollama_chat').send_chat_message()<CR>",
 		{ noremap = true, silent = true }
 	)
+	vim.api.nvim_buf_set_keymap(
+		input_buf,
+		"n",
+		"<leader>op",
+		":lua require('config.ollama_chat').show_provider_popup()<CR>",
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_buf_set_keymap(
+		input_buf,
+		"n",
+		"<leader>pd",
+		":lua require('config.ollama_chat').reset_provider_to_default()<CR>",
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_buf_set_keymap(
+		input_buf,
+		"n",
+		"<leader>ps",
+		":lua require('config.ollama_chat').show_provider_status()<CR>",
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_buf_set_keymap(
+		input_buf,
+		"n",
+		"<leader>pi",
+		":lua require('config.ollama_chat').show_provider_config_info()<CR>",
+		{ noremap = true, silent = true }
+	)
+	-- Add Grok provider keybinding
+	vim.api.nvim_buf_set_keymap(
+		input_buf,
+		"n",
+		"<leader>pk",
+		":lua require('config.ollama_chat').switch_provider('grok')<CR>",
+		{ noremap = true, silent = true }
+	)
 
 	-- Set up chat buffer keymaps
 	vim.api.nvim_buf_set_keymap(
@@ -545,8 +1052,307 @@ function M.toggle_chat_window()
 		{ noremap = true, silent = true }
 	)
 
+	-- Add provider selection popup keybinding
+	vim.api.nvim_buf_set_keymap(
+		chat_buf,
+		"n",
+		"<leader>op",
+		":lua require('config.ollama_chat').show_provider_popup()<CR>",
+		{ noremap = true, silent = true }
+	)
+	-- Add reset to default provider keybinding
+	vim.api.nvim_buf_set_keymap(
+		chat_buf,
+		"n",
+		"<leader>pd",
+		":lua require('config.ollama_chat').reset_provider_to_default()<CR>",
+		{ noremap = true, silent = true }
+	)
+	-- Add detailed config info keybinding
+	vim.api.nvim_buf_set_keymap(
+		chat_buf,
+		"n",
+		"<leader>pi",
+		":lua require('config.ollama_chat').show_provider_config_info()<CR>",
+		{ noremap = true, silent = true }
+	)
+
+	-- Add legacy provider switching keybindings (for backward compatibility)
+	vim.api.nvim_buf_set_keymap(
+		chat_buf,
+		"n",
+		"<leader>po",
+		":lua require('config.ollama_chat').switch_provider('ollama')<CR>",
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_buf_set_keymap(
+		chat_buf,
+		"n",
+		"<leader>pg",
+		":lua require('config.ollama_chat').switch_provider('openai')<CR>",
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_buf_set_keymap(
+		chat_buf,
+		"n",
+		"<leader>pc",
+		":lua require('config.ollama_chat').switch_provider('cloud')<CR>",
+		{ noremap = true, silent = true }
+	)
+	-- Add Grok provider keybinding
+	vim.api.nvim_buf_set_keymap(
+		chat_buf,
+		"n",
+		"<leader>pk",
+		":lua require('config.ollama_chat').switch_provider('grok')<CR>",
+		{ noremap = true, silent = true }
+	)
+
 	-- Enter insert mode in input window
 	vim.cmd("startinsert")
+end
+
+-- Switch to a different provider
+function M.switch_provider(provider)
+	-- Initialize provider if not already done
+	if not M._provider_initialized then
+		M.initialize_provider()
+		M._provider_initialized = true
+	end
+
+	if providers[provider] then
+		local valid, error_msg = M.validate_api_key(provider)
+		if not valid then
+			print("Error: " .. error_msg)
+			return
+		end
+
+		local old_provider = current_provider
+		current_provider = provider
+
+		-- Save the new provider setting
+		local saved = M.save_current_provider()
+		if not saved then
+			print("Warning: Could not save provider preference")
+		end
+
+		if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
+			-- Update chat header to show current provider
+			local header = "=== " .. providers[provider].name .. " Chat ==="
+			vim.api.nvim_set_option_value("modifiable", true, { buf = chat_buf })
+			vim.api.nvim_buf_set_lines(chat_buf, 0, 1, false, { header, "" })
+			vim.api.nvim_set_option_value("modifiable", false, { buf = chat_buf })
+		end
+
+		if old_provider ~= provider then
+			local save_status = saved and " (saved)" or " (not saved)"
+			print("Switched to " .. providers[provider].name .. save_status)
+		end
+	else
+		print("Error: Unknown provider '" .. provider .. "'")
+	end
+end
+
+-- Show current provider status
+function M.show_provider_status()
+	-- Initialize provider if not already done
+	if not M._provider_initialized then
+		M.initialize_provider()
+		M._provider_initialized = true
+	end
+
+	local status = "Current provider: " .. providers[current_provider].name
+	if current_provider ~= "ollama" then
+		local valid, error_msg = M.validate_api_key(current_provider)
+		if not valid then
+			status = status .. " (API key missing: " .. error_msg .. ")"
+		else
+			status = status .. " (API key configured)"
+		end
+	end
+
+	-- Show persistence info
+	local file_exists = vim.fn.filereadable(provider_config_file) == 1
+	if file_exists then
+		status = status .. " (saved)"
+	else
+		status = status .. " (not saved)"
+	end
+
+	print(status)
+end
+
+-- Show detailed provider configuration info
+function M.show_provider_config_info()
+	print("=== AI Chat Provider Configuration ===")
+	print("Config file: " .. provider_config_file)
+	print("Current provider: " .. providers[current_provider].name)
+
+	local file_exists = vim.fn.filereadable(provider_config_file) == 1
+	if file_exists then
+		local file = io.open(provider_config_file, 'r')
+		if file then
+			local content = file:read('*all')
+			file:close()
+			local success, data = pcall(vim.json.decode, content)
+			if success and data then
+				print("Saved provider: " .. (data.provider or "none"))
+				if data.timestamp then
+					print("Last saved: " .. os.date("%Y-%m-%d %H:%M:%S", data.timestamp))
+				end
+			end
+		end
+	else
+		print("No saved configuration found")
+	end
+
+	print("\nAvailable providers:")
+	for key, provider in pairs(providers) do
+		local status = ""
+		if key ~= "ollama" then
+			local valid, error_msg = M.validate_api_key(key)
+			if not valid then
+				status = " (API key missing)"
+			else
+				status = " (configured)"
+			end
+		else
+			status = " (local)"
+		end
+		local current_marker = (key == current_provider) and " ← current" or ""
+		print("  " .. provider.name .. status .. current_marker)
+	end
+end
+
+-- Show provider selection popup
+function M.show_provider_popup()
+	-- Initialize provider if not already done
+	if not M._provider_initialized then
+		M.initialize_provider()
+		M._provider_initialized = true
+	end
+
+	local options = {}
+	local option_keys = {}
+
+	for key, provider in pairs(providers) do
+		local status = ""
+		if key ~= "ollama" then
+			local valid, error_msg = M.validate_api_key(key)
+			if not valid then
+				status = " (⚠️  API key missing)"
+			else
+				status = " (✅ configured)"
+			end
+		else
+			status = " (🏠 local)"
+		end
+
+		local display_name = provider.name .. status
+		if key == current_provider then
+			display_name = "● " .. display_name .. " (current)"
+		else
+			display_name = "○ " .. display_name
+		end
+
+		table.insert(options, display_name)
+		table.insert(option_keys, key)
+	end
+
+	-- Try vim.ui.select first, fallback to custom popup
+	if vim.ui and vim.ui.select then
+		vim.ui.select(options, {
+			prompt = "Select AI Provider:",
+			format_item = function(item)
+				return item
+			end,
+		}, function(choice, idx)
+			if choice and idx then
+				local selected_provider = option_keys[idx]
+				M.switch_provider(selected_provider)
+			end
+		end)
+	else
+		-- Fallback: create a simple floating window popup
+		M.show_custom_provider_popup(options, option_keys)
+	end
+end
+
+-- Custom floating window popup for provider selection
+function M.show_custom_provider_popup(options, option_keys)
+	local width = 50
+	local height = #options + 2
+	local row = math.floor((vim.o.lines - height) / 2)
+	local col = math.floor((vim.o.columns - width) / 2)
+
+	-- Create buffer
+	local buf = vim.api.nvim_create_buf(false, true)
+	vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
+	vim.api.nvim_buf_set_option(buf, 'swapfile', false)
+
+	-- Create window
+	local win = vim.api.nvim_open_win(buf, true, {
+		relative = 'editor',
+		width = width,
+		height = height,
+		row = row,
+		col = col,
+		style = 'minimal',
+		border = 'rounded',
+	})
+
+	-- Set content
+	local lines = { "Select AI Provider:", "" }
+	for i, option in ipairs(options) do
+		table.insert(lines, string.format("%d. %s", i, option))
+	end
+	table.insert(lines, "")
+	table.insert(lines, "Press number key to select, Esc to cancel")
+
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+	-- Set keymaps for selection
+	for i = 1, #options do
+		vim.api.nvim_buf_set_keymap(buf, 'n', tostring(i), string.format(
+			':lua require("config.ollama_chat").select_provider_from_popup(%d)<CR>',
+			i
+		), { noremap = true, silent = true })
+	end
+
+	vim.api.nvim_buf_set_keymap(buf, 'n', '<Esc>', ':lua require("config.ollama_chat").close_provider_popup()<CR>', { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':lua require("config.ollama_chat").close_provider_popup()<CR>', { noremap = true, silent = true })
+
+	-- Store popup state
+	M.provider_popup = {
+		win = win,
+		buf = buf,
+		options = option_keys
+	}
+
+	-- Enter insert mode to make it more obvious it's interactive
+	vim.cmd('startinsert')
+end
+
+-- Select provider from popup
+function M.select_provider_from_popup(index)
+	if M.provider_popup and M.provider_popup.options[index] then
+		local selected_provider = M.provider_popup.options[index]
+		M.close_provider_popup()
+		M.switch_provider(selected_provider)
+	end
+end
+
+-- Close provider popup
+function M.close_provider_popup()
+	if M.provider_popup then
+		if vim.api.nvim_win_is_valid(M.provider_popup.win) then
+			vim.api.nvim_win_close(M.provider_popup.win, true)
+		end
+		if vim.api.nvim_buf_is_valid(M.provider_popup.buf) then
+			vim.api.nvim_buf_delete(M.provider_popup.buf, { force = true })
+		end
+		M.provider_popup = nil
+	end
 end
 
 -- Send message from input buffer
@@ -572,8 +1378,8 @@ function M.send_chat_message()
 	-- Show "thinking" indicator
 	M.add_to_chat("Thinking...", false)
 
-	-- Send to Ollama
-	M.query_ollama_async(message, function(response)
+	-- Send to AI provider
+	M.query_ai_async(message, function(response)
 		vim.schedule(function()
 			-- Remove "thinking" indicator
 			if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
@@ -637,12 +1443,8 @@ function M.get_lsp_diagnostics_for_selection()
 		end_line = vend[2]
 	end
 
-	print("Debug: LSP diagnostics range - lines " .. start_line .. " to " .. end_line)
-
 	-- Get all diagnostics for the current buffer
 	local diagnostics = vim.diagnostic.get(buf)
-
-	print("Debug: Total diagnostics in buffer: " .. #diagnostics)
 
 	local relevant_diagnostics = {}
 	local similar_diagnostics = {} -- Track similar issues throughout the file
@@ -661,13 +1463,9 @@ function M.get_lsp_diagnostics_for_selection()
 		end
 	end
 
-	print("Debug: Found " .. #relevant_diagnostics .. " diagnostics in selection")
-	print("Debug: Found " .. #similar_diagnostics .. " similar diagnostics in entire file")
-
 	-- If we only found a few diagnostics in the selection, but there are many similar ones,
 	-- include some of the similar ones to give better context
 	if #relevant_diagnostics < 3 and #similar_diagnostics > #relevant_diagnostics then
-		print("Debug: Adding similar diagnostics for better context")
 		for _, diag in ipairs(similar_diagnostics) do
 			local already_included = false
 			for _, existing in ipairs(relevant_diagnostics) do
@@ -736,17 +1534,12 @@ function M.send_selection_to_chat_for_debug()
 	local lsp_info = M.format_lsp_diagnostics(diagnostics)
 
 	-- Create the debug prompt with the selected code and LSP errors
-	local debug_prompt = "Add debug code, logging statements, and print statements to help debug this code. Add variable inspection, error handling, and debugging utilities:\n\n```\n"
-		.. text
-		.. "\n```"
-
+	local debug_prompt = clean_code_prompt .. "\n\n" .. text
 	-- Add LSP diagnostics if available
 	if lsp_info then
-		debug_prompt = debug_prompt
-			.. lsp_info
-			.. "\n\nPlease address these LSP errors/warnings and add comprehensive debugging code."
+		debug_prompt = debug_prompt .. lsp_info .. "\n\n fix it"
 	else
-		debug_prompt = debug_prompt .. "\n\nProvide the code with comprehensive debugging additions and explanations."
+		debug_prompt = debug_prompt .. "\n\nfix it"
 	end
 
 	-- Open chat window if not open
@@ -774,7 +1567,7 @@ function M.send_selection_to_chat_for_editing()
 	M.store_selection_context()
 
 	-- Just send the selected code without extra prompt text
-	local editing_prompt = text
+	local editing_prompt = clean_code_prompt .. "\n\n" .. text
 
 	-- Open chat window if not open
 	if not chat_win or not vim.api.nvim_win_is_valid(chat_win) then
@@ -812,8 +1605,8 @@ function M.process_code_edit_request(text)
 	-- Show "thinking" indicator
 	M.add_to_chat("Thinking...", false)
 
-	-- Send to Ollama
-	M.query_ollama_async(text, function(response)
+	-- Send to AI provider
+	M.query_ai_async(text, function(response)
 		vim.schedule(function()
 			-- Remove "thinking" indicator
 			if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
@@ -900,8 +1693,8 @@ function M.process_chat_message(message)
 	-- Show "thinking" indicator
 	M.add_to_chat("Thinking...", false)
 
-	-- Send to Ollama
-	M.query_ollama_async(message, function(response)
+	-- Send to AI provider
+	M.query_ai_async(message, function(response)
 		vim.schedule(function()
 			-- Remove "thinking" indicator
 			if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
@@ -925,29 +1718,10 @@ function M.process_chat_message(message)
 	end)
 end
 
--- Focus chat input window
-function M.focus_chat_input()
-	if input_win and vim.api.nvim_win_is_valid(input_win) then
-		vim.api.nvim_set_current_win(input_win)
-		vim.cmd("startinsert")
-	else
-		print("Chat window is not open. Use <Space>oc to open it.")
-	end
-end
-
--- Focus chat history window
-function M.focus_chat_history()
-	if chat_win and vim.api.nvim_win_is_valid(chat_win) then
-		vim.api.nvim_set_current_win(chat_win)
-	else
-		print("Chat window is not open. Use <Space>oc to open it.")
-	end
-end
-
 -- Test function for debugging
-function M.test_ollama()
+function M.test_ai()
 	local test_text = "Hello, can you respond with just 'Hi there!'?"
-	M.query_ollama_async(test_text, function(response)
+	M.query_ai_async(test_text, function(response)
 		vim.schedule(function()
 			M.show_response(response)
 		end)
@@ -1008,17 +1782,72 @@ function M.debug_lsp_diagnostics()
 end
 
 -- تابع اصلی (برای quick queries)
-function M.send_to_ollama()
+function M.send_to_ai()
 	local text = M.get_selection()
 	if not text or text == "" then
 		return
 	end
 
-	M.query_ollama_async(text, function(response)
+	M.query_ai_async(text, function(response)
 		vim.schedule(function()
 			M.show_response(response)
 		end)
 	end)
+end
+
+-- Global function to show provider popup from anywhere
+function M.select_provider_global()
+	M.show_provider_popup()
+end
+
+-- Test Ollama connection
+function M.test_ollama_connection()
+	print("Testing Ollama connection...")
+
+	local test_text = "Hello, respond with just 'OK' if you can hear me."
+
+	M.query_ollama_async(test_text, function(response)
+		vim.schedule(function()
+			print("Ollama test response: " .. (response or "nil"))
+		end)
+	end)
+end
+
+-- Simple synchronous Ollama test
+function M.test_ollama_simple()
+	print("Testing simple Ollama command...")
+
+	local handle = io.popen('echo "Hi" | timeout 10s ollama run qwen3:4b-instruct-2507-q4_K_M 2>/dev/null | head -5')
+	if handle then
+		local result = handle:read("*a")
+		handle:close()
+		print("Simple test result:")
+		print(result)
+	else
+		print("Failed to run simple test")
+	end
+end
+
+-- Test provider persistence (for debugging)
+function M.test_provider_persistence()
+	print("=== Testing Provider Persistence ===")
+
+	-- Test saving
+	local original_provider = current_provider
+	current_provider = "openai"
+	local saved = M.save_current_provider()
+	print("Save test: " .. (saved and "SUCCESS" or "FAILED"))
+
+	-- Test loading
+	current_provider = "ollama" -- Reset to different value
+	local loaded = M.load_saved_provider()
+	print("Load test: " .. (loaded and "SUCCESS" or "FAILED"))
+	print("Loaded provider: " .. current_provider)
+
+	-- Restore original
+	current_provider = original_provider
+	M.save_current_provider()
+	print("Restored original provider: " .. current_provider)
 end
 
 return M
