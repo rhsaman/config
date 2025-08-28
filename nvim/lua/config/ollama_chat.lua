@@ -103,6 +103,12 @@ function M.get_selection()
 	-- Check if we have a valid visual selection
 	if vstart[2] > 0 and vend[2] > 0 and (vstart[2] ~= vend[2] or vstart[3] ~= vend[3]) then
 		local lines = vim.fn.getline(vstart[2], vend[2])
+
+		-- اگه فقط یه خط باشه، `vim.fn.getline` یه string میده → باید بکنیمش table
+		if type(lines) == "string" then
+			lines = { lines }
+		end
+
 		if #lines == 1 then
 			-- Single line selection
 			lines[1] = string.sub(lines[1], vstart[3], vend[3])
@@ -111,6 +117,7 @@ function M.get_selection()
 			lines[1] = string.sub(lines[1], vstart[3])
 			lines[#lines] = string.sub(lines[#lines], 1, vend[3])
 		end
+
 		return table.concat(lines, "\n")
 	else
 		-- No selection, get current line
@@ -171,7 +178,7 @@ function M.query_ollama_async(text, callback)
 				end
 			end
 		end,
-		on_stderr = function(_, err)
+		on_stderr = function(_, _)
 			-- Silently handle errors
 		end,
 		on_exit = function(_, exit_code)
@@ -223,7 +230,7 @@ function M.show_response(response)
 	})
 
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(response, "\n"))
-	vim.api.nvim_buf_set_option(buf, "modifiable", false)
+	vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 end
 
 -- Apply code edit to original buffer (without switching to it)
@@ -377,7 +384,7 @@ end
 -- Clear edit options from chat window
 function M.clear_edit_options()
 	if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
-		vim.api.nvim_buf_set_option(chat_buf, "modifiable", true)
+		vim.api.nvim_set_option_value("modifiable", true, { buf = chat_buf })
 		local lines = vim.api.nvim_buf_get_lines(chat_buf, 0, -1, false)
 
 		-- Find and remove accept/deny lines
@@ -389,14 +396,14 @@ function M.clear_edit_options()
 		end
 
 		vim.api.nvim_buf_set_lines(chat_buf, 0, -1, false, new_lines)
-		vim.api.nvim_buf_set_option(chat_buf, "modifiable", false)
+		vim.api.nvim_set_option_value("modifiable", false, { buf = chat_buf })
 	end
 end
 
 -- Add accept/deny options to chat
 function M.add_edit_options()
 	if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
-		vim.api.nvim_buf_set_option(chat_buf, "modifiable", true)
+		vim.api.nvim_set_option_value("modifiable", true, { buf = chat_buf })
 		local options = {
 			"",
 			">>> Press 'a' to ACCEPT this code edit or 'd' to DENY it <<<",
@@ -405,7 +412,7 @@ function M.add_edit_options()
 			"",
 		}
 		vim.api.nvim_buf_set_lines(chat_buf, -1, -1, false, options)
-		vim.api.nvim_buf_set_option(chat_buf, "modifiable", false)
+		vim.api.nvim_set_option_value("modifiable", false, { buf = chat_buf })
 
 		-- Auto scroll to bottom
 		if chat_win and vim.api.nvim_win_is_valid(chat_win) then
@@ -424,10 +431,11 @@ function M.add_to_chat(message, is_user)
 	table.insert(chat_history, formatted_message)
 
 	if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
-		vim.api.nvim_buf_set_option(chat_buf, "modifiable", true)
+		vim.api.nvim_set_option_value("modifiable", true, { buf = chat_buf })
+
 		vim.api.nvim_buf_set_lines(chat_buf, -1, -1, false, vim.split(formatted_message, "\n"))
 		vim.api.nvim_buf_set_lines(chat_buf, -1, -1, false, { "" })
-		vim.api.nvim_buf_set_option(chat_buf, "modifiable", false)
+		vim.api.nvim_set_option_value("modifiable", false, { buf = chat_buf })
 
 		-- Auto scroll to bottom
 		if chat_win and vim.api.nvim_win_is_valid(chat_win) then
@@ -445,10 +453,10 @@ function M.toggle_chat_window()
 
 	if chat_exists or input_exists then
 		-- Close chat windows
-		if chat_exists then
+		if chat_exists and chat_win then
 			vim.api.nvim_win_close(chat_win, true)
 		end
-		if input_exists then
+		if input_exists and input_win then
 			vim.api.nvim_win_close(input_win, true)
 		end
 		chat_win = nil
@@ -459,23 +467,23 @@ function M.toggle_chat_window()
 	-- Create chat buffer if it doesn't exist
 	if not chat_buf or not vim.api.nvim_buf_is_valid(chat_buf) then
 		chat_buf = vim.api.nvim_create_buf(false, true)
-		vim.api.nvim_buf_set_option(chat_buf, "buftype", "nofile")
-		vim.api.nvim_buf_set_option(chat_buf, "swapfile", false)
-		vim.api.nvim_buf_set_option(chat_buf, "filetype", "markdown")
+		vim.bo[chat_buf].buftype = "nofile"
+		vim.bo[chat_buf].swapfile = false
+		vim.bo[chat_buf].filetype = "markdown"
 		vim.api.nvim_buf_set_name(chat_buf, "[Ollama Chat]")
 
 		-- Add welcome message
 		local welcome = "=== Ollama Chat ==="
 		vim.api.nvim_buf_set_lines(chat_buf, 0, -1, false, { welcome, "" })
-		vim.api.nvim_buf_set_option(chat_buf, "modifiable", false)
+		vim.bo[chat_buf].modifiable = false
 	end
 
 	-- Create input buffer if it doesn't exist
 	if not input_buf or not vim.api.nvim_buf_is_valid(input_buf) then
 		input_buf = vim.api.nvim_create_buf(false, true)
-		vim.api.nvim_buf_set_option(input_buf, "buftype", "nofile")
-		vim.api.nvim_buf_set_option(input_buf, "swapfile", false)
-		vim.api.nvim_buf_set_option(input_buf, "filetype", "text")
+		vim.bo[input_buf].buftype = "nofile"
+		vim.bo[input_buf].swapfile = false
+		vim.bo[input_buf].filetype = "text"
 		vim.api.nvim_buf_set_name(input_buf, "[Ollama Input]")
 	end
 
@@ -569,13 +577,13 @@ function M.send_chat_message()
 		vim.schedule(function()
 			-- Remove "thinking" indicator
 			if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
-				vim.api.nvim_buf_set_option(chat_buf, "modifiable", true)
+				vim.bo[chat_buf].modifiable = true
 				local line_count = vim.api.nvim_buf_line_count(chat_buf)
 				-- Remove last 2 lines ("Thinking..." and empty line)
 				if line_count >= 2 then
 					vim.api.nvim_buf_set_lines(chat_buf, line_count - 2, line_count, false, {})
 				end
-				vim.api.nvim_buf_set_option(chat_buf, "modifiable", false)
+				vim.bo[chat_buf].modifiable = false
 			end
 
 			-- Add AI response
@@ -809,13 +817,13 @@ function M.process_code_edit_request(text)
 		vim.schedule(function()
 			-- Remove "thinking" indicator
 			if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
-				vim.api.nvim_buf_set_option(chat_buf, "modifiable", true)
+				vim.bo[chat_buf].modifiable = false
 				local line_count = vim.api.nvim_buf_line_count(chat_buf)
 				-- Remove last 2 lines ("Thinking..." and empty line)
 				if line_count >= 2 then
 					vim.api.nvim_buf_set_lines(chat_buf, line_count - 2, line_count, false, {})
 				end
-				vim.api.nvim_buf_set_option(chat_buf, "modifiable", false)
+				vim.bo[chat_buf].modifiable = false
 			end
 
 			-- Add AI response
@@ -897,13 +905,14 @@ function M.process_chat_message(message)
 		vim.schedule(function()
 			-- Remove "thinking" indicator
 			if chat_buf and vim.api.nvim_buf_is_valid(chat_buf) then
-				vim.api.nvim_buf_set_option(chat_buf, "modifiable", true)
+				vim.bo[chat_buf].modifiable = true
+
 				local line_count = vim.api.nvim_buf_line_count(chat_buf)
 				-- Remove last 2 lines ("Thinking..." and empty line)
 				if line_count >= 2 then
 					vim.api.nvim_buf_set_lines(chat_buf, line_count - 2, line_count, false, {})
 				end
-				vim.api.nvim_buf_set_option(chat_buf, "modifiable", false)
+				vim.bo[chat_buf].modifiable = false
 			end
 
 			-- Add AI response
