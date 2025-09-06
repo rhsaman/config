@@ -642,6 +642,9 @@ local providers = get_providers()
 -- Current active provider
 local current_provider = "ollama"
 
+-- Main window reference for switching
+local main_win = nil
+
 -- Provider persistence
 local provider_config_file = vim.fn.stdpath("data") .. "/ollama_chat_provider.json"
 
@@ -1557,13 +1560,10 @@ function M.add_to_chat(message, is_user)
 		vim.api.nvim_buf_set_lines(chat_buf, -1, -1, false, { "" })
 		vim.api.nvim_set_option_value("modifiable", false, { buf = chat_buf })
 
-		-- Auto scroll to bottom (only if chat window is currently focused)
+		-- Auto scroll to bottom
 		if chat_win and vim.api.nvim_win_is_valid(chat_win) then
-			local current_win = vim.api.nvim_get_current_win()
-			if current_win == chat_win then
-				local line_count = vim.api.nvim_buf_line_count(chat_buf)
-				vim.api.nvim_win_set_cursor(chat_win, { line_count, 0 })
-			end
+			local line_count = vim.api.nvim_buf_line_count(chat_buf)
+			vim.api.nvim_win_set_cursor(chat_win, { line_count, 0 })
 		end
 	end
 end
@@ -1601,6 +1601,9 @@ function M.toggle_chat_window()
 		return
 	end
 
+	-- Store main window for switching
+	main_win = vim.api.nvim_get_current_win()
+
 	-- Create chat buffer if it doesn't exist
 	if not chat_buf or not vim.api.nvim_buf_is_valid(chat_buf) then
 		chat_buf = vim.api.nvim_create_buf(false, true)
@@ -1637,15 +1640,31 @@ function M.toggle_chat_window()
 		vim.api.nvim_buf_set_name(input_buf, "[Ollama Input]")
 	end
 
-	-- Create vertical split on the right (40% width)
-	vim.cmd("rightbelow 50vnew")
-	chat_win = vim.api.nvim_get_current_win()
-	vim.api.nvim_win_set_buf(chat_win, chat_buf)
+	-- Create floating window on the right (half width)
+	local width = math.floor(vim.o.columns / 2)
+	local height = vim.o.lines
+	local row = 0
+	local col = vim.o.columns - width
 
-	-- Create horizontal split in chat pane for input (larger height)
-	vim.cmd("rightbelow 8split")
-	input_win = vim.api.nvim_get_current_win()
-	vim.api.nvim_win_set_buf(input_win, input_buf)
+	chat_win = vim.api.nvim_open_win(chat_buf, false, {
+		relative = "editor",
+		width = width,
+		height = height - 8,
+		row = row,
+		col = col,
+		style = "minimal",
+		border = "rounded",
+	})
+
+	input_win = vim.api.nvim_open_win(input_buf, true, {
+		relative = "editor",
+		width = width,
+		height = 8,
+		row = height - 8,
+		col = col,
+		style = "minimal",
+		border = "rounded",
+	})
 
 	-- ===========================================
 	-- INPUT BUFFER KEYMAPS
@@ -1809,10 +1828,26 @@ function M.toggle_chat_window()
 	set_keymap(
 		input_buf,
 		"n",
-		"<leader>of",
+		"<leader>ofi",
 		":lua require('config.ollama_chat').focus_input_window()<CR>",
 		{ noremap = true, silent = true },
-		"Focus back to input window"
+		"Focus to input window"
+	)
+	set_keymap(
+		input_buf,
+		"n",
+		"<leader>ofc",
+		":lua require('config.ollama_chat').focus_chat_window()<CR>",
+		{ noremap = true, silent = true },
+		"Focus to chat window"
+	)
+	set_keymap(
+		input_buf,
+		"n",
+		"<leader>ofm",
+		":lua require('config.ollama_chat').focus_main_window()<CR>",
+		{ noremap = true, silent = true },
+		"Focus to main window"
 	)
 	set_keymap(
 		input_buf,
@@ -1978,10 +2013,26 @@ function M.toggle_chat_window()
 	set_keymap(
 		chat_buf,
 		"n",
-		"<leader>of",
+		"<leader>ofi",
 		":lua require('config.ollama_chat').focus_input_window()<CR>",
 		{ noremap = true, silent = true },
-		"Focus back to input window"
+		"Focus to input window"
+	)
+	set_keymap(
+		chat_buf,
+		"n",
+		"<leader>ofc",
+		":lua require('config.ollama_chat').focus_chat_window()<CR>",
+		{ noremap = true, silent = true },
+		"Focus to chat window"
+	)
+	set_keymap(
+		chat_buf,
+		"n",
+		"<leader>ofm",
+		":lua require('config.ollama_chat').focus_main_window()<CR>",
+		{ noremap = true, silent = true },
+		"Focus to main window"
 	)
 	set_keymap(
 		chat_buf,
@@ -2055,6 +2106,39 @@ function M.toggle_chat_window()
 
 	-- Enter insert mode in input window
 	vim.cmd("startinsert")
+
+	-- Set global keymaps for focus functions
+	vim.api.nvim_set_keymap(
+		"n",
+		"<leader>ofi",
+		":lua require('config.ollama_chat').focus_input_window()<CR>",
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_set_keymap(
+		"n",
+		"<leader>ofc",
+		":lua require('config.ollama_chat').focus_chat_window()<CR>",
+		{ noremap = true, silent = true }
+	)
+	vim.api.nvim_set_keymap(
+		"n",
+		"<leader>ofm",
+		":lua require('config.ollama_chat').focus_main_window()<CR>",
+		{ noremap = true, silent = true }
+	)
+end
+
+-- Focus functions for switching between windows
+function M.focus_chat_window()
+	if chat_win and vim.api.nvim_win_is_valid(chat_win) then
+		vim.api.nvim_set_current_win(chat_win)
+	end
+end
+
+function M.focus_main_window()
+	if main_win and vim.api.nvim_win_is_valid(main_win) then
+		vim.api.nvim_set_current_win(main_win)
+	end
 end
 
 -- Switch to a different provider
@@ -2367,6 +2451,8 @@ function M.send_chat_message()
 
 			-- Add AI response
 			if response and response ~= "" then
+				-- Clean timeout/fallback messages from response
+				response = response:gsub(" %(timed out, via fallback%)", ""):gsub(" %(via fallback%)", "")
 				M.add_to_chat(response, false)
 
 				-- Check if we have a pending edit context and if response contains code
@@ -2693,6 +2779,8 @@ function M.process_chat_message(message)
 
 			-- Add AI response
 			if response and response ~= "" then
+				-- Clean timeout/fallback messages from response
+				response = response:gsub(" %(timed out, via fallback%)", ""):gsub(" %(via fallback%)", "")
 				M.add_to_chat(response, false)
 			else
 				M.add_to_chat("No response received from Ollama", false)
@@ -2746,6 +2834,13 @@ function M.debug_selection()
 		-- No selection, show cursor info
 		local line_content = vim.api.nvim_get_current_line()
 		print(string.format("Cursor: Line %d, Col %d | Line: '%s'", current_line, current_col, line_content))
+	end
+
+	-- Show pending edit status
+	if pending_edit.original_buf and vim.api.nvim_buf_is_valid(pending_edit.original_buf) then
+		print("Pending code edit: 'a' to accept, 'd' to deny")
+	else
+		print("No pending code edit")
 	end
 end
 
