@@ -60,3 +60,11 @@ keymap.set("n", "<leader>ha", ":lua require('harpoon.mark').add_file()<cr>", { d
 keymap.set("n", "<leader>ho", ":lua require('harpoon.ui').toggle_quick_menu()<cr>", { desc = "harpoon files" })
 keymap.set("n", "<C-n>", ':lua require("harpoon.ui").nav_next()<cr>', { desc = "harpoon next file" })
 keymap.set("n", "<C-p>", ':lua require("harpoon.ui").nav_prev()<cr>', { desc = "harpoon previous files" })
+
+-- telescope
+keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "find files" })
+keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>", { desc = "search string" })
+keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "recent files" })
+keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "buffers" })
+keymap.set("n", "<leader>fd", "<cmd>Telescope diagnostics<cr>", { desc = "diagnostics" })
+keymap.set("n", "<leader>fl", "<cmd>Telescope lsp_document_symbols<cr>", { desc = "list symbols" })

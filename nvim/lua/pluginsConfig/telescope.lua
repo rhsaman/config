@@ -1,7 +1,7 @@
 return {
 	"nvim-telescope/telescope.nvim",
 	branch = "0.1.x",
-	event = { "BufReadPre", "BufNewFile" },
+	event = "VeryLazy",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 		{
@@ -87,21 +87,5 @@ return {
 		telescope.setup(default_setup)
 
 		telescope.load_extension("fzf")
-
-		-- تعریف میانبرها
-		local builtin = require("telescope.builtin")
-		vim.keymap.set("n", "<leader>fl", builtin.lsp_document_symbols, { desc = "list symbols" })
-		vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "find files" })
-		vim.keymap.set("n", "<leader>fs", builtin.live_grep, { desc = "search string" })
-		vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "recent files" })
-		vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "buffers" })
-		vim.keymap.set("n", "<leader>fd", builtin.diagnostics, { desc = "diagnostics" })
-		vim.keymap.set("n", "<leader>fc", ":Telescope git_commits theme=dropdown<cr>", { desc = "git commits" })
-		vim.keymap.set(
-			"n",
-			"<leader>fC",
-			":Telescope git_bcommits theme=dropdown<cr>",
-			{ desc = "git commits current file" }
-		)
 	end,
 }

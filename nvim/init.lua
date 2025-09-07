@@ -1,5 +1,4 @@
 require("config.keymaps")
-require("config.ollama_chat")
 require("config.options")
 require("config.terminal")
 require("config.lazy")
