@@ -20,31 +20,31 @@
       "git commit": "allow",
       "git push": "ask",
       "*": "ask"
-    }
-  },
-  "provider": {
-    "ollama": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama (local)",
-      "options": {
-        "baseURL": "http://localhost:11434/v1"
-      },
-      "models": {
-        "qwen3:4b-instruct-2507-q4_K_M": {
-          "prompt": "Just answer questions concisely without extra explanations or offers of help. If the prompt contains a URL, use MCP tools. Use the web search tool if not information about it.",
-          "name": "qwen3:4b-instruct-2507-q4_K_M"
+    },
+    "provider": {
+      "ollama": {
+        "npm": "@ai-sdk/openai-compatible",
+        "name": "Ollama (local)",
+        "options": {
+          "baseURL": "http://localhost:11434/v1"
         },
-        "qwen3:4b-thinking-2507-q4_K_M": {
-          "prompt": "Just answer questions concisely without extra explanations or offers of help. If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
-          "name": "qwen3:4b-thinking-2507-q4_K_M"
+        "models": {
+          "qwen3:4b-instruct-2507-q4_K_M": {
+            "prompt": "Just answer questions concisely without extra explanations or offers of help. If the prompt contains a URL, use MCP tools. Use the web search tool if not information about it.",
+            "name": "qwen3:4b-instruct-2507-q4_K_M"
+          },
+          "qwen3:4b-thinking-2507-q4_K_M": {
+            "prompt": "Just answer questions concisely without extra explanations or offers of help. If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
+            "name": "qwen3:4b-thinking-2507-q4_K_M"
+          }
         }
       }
-    }
-  },
-  "agent": {
-    "build": {
-      "prompt": "Just answer questions concisely without extra explanations or offers of help. If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
-      "mode": "primary"
+    },
+    "agent": {
+      "build": {
+        "prompt": "If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
+        "mode": "primary"
+      }
     }
   }
 }
