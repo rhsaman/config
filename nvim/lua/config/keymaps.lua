@@ -68,3 +68,8 @@ keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "recent fi
 keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "buffers" })
 keymap.set("n", "<leader>fd", "<cmd>Telescope diagnostics<cr>", { desc = "diagnostics" })
 keymap.set("n", "<leader>fl", "<cmd>Telescope lsp_document_symbols<cr>", { desc = "list symbols" })
+
+-- toggle rtl
+vim.keymap.set("n", "<leadel>rl", function()
+	vim.o.rightleft = not vim.o.rightleft
+end, { desc = "Toggle right-to-left mode" })
