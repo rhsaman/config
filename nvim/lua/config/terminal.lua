@@ -1,5 +1,6 @@
--- terminal
-vim.keymap.set("t", "<esc><esc>", "<c-\\><c-n>")
+-- terminal - optimized for performance
+local term_opts = { silent = true }
+vim.keymap.set("t", "<esc><esc>", "<c-\\><c-n>", term_opts)
 
 local state = {
   floating = {

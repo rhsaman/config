@@ -74,7 +74,7 @@ return {
 	-- codium
 	{
 		"Exafunction/codeium.vim",
-
+		event = "VeryLazy",
 		config = function()
 			-- Change '<C-g>' here to any keycode you like.
 			vim.keymap.set("i", "<c-t>", function()
@@ -234,12 +234,12 @@ return {
 	-- fugitive
 	{
 		"tpope/vim-fugitive",
-		event = "VeryLazy",
+		cmd = { "Git", "Gdiffsplit", "Gvdiffsplit", "Gread", "Gwrite", "Ggrep", "GMove", "GDelete", "GRename" },
 		keys = {
-			{ "<leader>ga", ":Git add .<cr>", desc = "Git add" },
-			{ "<leader>gc", ':Git commit -m "', desc = "Git commit" },
-			{ "<leader>gp", ":Git push<cr>", desc = "Git push" },
-			{ "<leader>gi", "<cmd>:Git<cr>", desc = "fugitive" },
+			{ "<leader>ga", ":Git add .<cr>", desc = "Git add", silent = true },
+			{ "<leader>gc", ':Git commit -m "', desc = "Git commit", silent = true },
+			{ "<leader>gp", ":Git push<cr>", desc = "Git push", silent = true },
+			{ "<leader>gi", "<cmd>:Git<cr>", desc = "fugitive", silent = true },
 		},
 	},
 

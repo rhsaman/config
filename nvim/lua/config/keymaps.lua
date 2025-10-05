@@ -17,10 +17,10 @@ vim.keymap.set("n", "<leader>i", function()
 end, { desc = "Toggle inlay hints" })
 
 keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "See available code actions" }) -- see available code actions, in visual mode will apply to selection
-keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", { desc = "Show LSP type definitions" }) -- show lsp type definitions
-keymap.set("n", "gi", vim.lsp.buf.implementation, { desc = "Go to implementation" }) -- go to declaration
-keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, { desc = "Show signature help" })
-keymap.set("i", "<C-k>", vim.lsp.buf.signature_help, { desc = "Show signature help" })
+keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", { desc = "Go to LSP definition", silent = true }) -- show lsp type definitions (more efficient than Telescope)
+keymap.set("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", { desc = "Go to implementation", silent = true }) -- go to declaration
+keymap.set("n", "<C-k>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", { desc = "Show signature help", silent = true })
+keymap.set("i", "<C-k>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", { desc = "Show signature help", silent = true })
 
 ------------------------resize window-----------------------
 
@@ -61,15 +61,15 @@ keymap.set("n", "<leader>ho", ":lua require('harpoon.ui').toggle_quick_menu()<cr
 keymap.set("n", "<C-n>", ':lua require("harpoon.ui").nav_next()<cr>', { desc = "harpoon next file" })
 keymap.set("n", "<C-p>", ':lua require("harpoon.ui").nav_prev()<cr>', { desc = "harpoon previous files" })
 
--- telescope
-keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "find files" })
-keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>", { desc = "search string" })
-keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "recent files" })
-keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "buffers" })
-keymap.set("n", "<leader>fd", "<cmd>Telescope diagnostics<cr>", { desc = "diagnostics" })
-keymap.set("n", "<leader>fl", "<cmd>Telescope lsp_document_symbols<cr>", { desc = "list symbols" })
+-- telescope - lazy load on keypress
+keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "find files", silent = true })
+keymap.set("n", "<leader>fs", "<cmd>Telescope live_grep<cr>", { desc = "search string", silent = true })
+keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "recent files", silent = true })
+keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "buffers", silent = true })
+keymap.set("n", "<leader>fd", "<cmd>lua vim.diagnostic.open_float()<CR>", { desc = "diagnostics", silent = true })
+keymap.set("n", "<leader>fl", "<cmd>Telescope lsp_document_symbols<cr>", { desc = "list symbols", silent = true })
 
 -- toggle rtl
-vim.keymap.set("n", "<leadel>rl", function()
+keymap.set("n", "<leadel>l", function()
 	vim.o.rightleft = not vim.o.rightleft
 end, { desc = "Toggle right-to-left mode" })

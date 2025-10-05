@@ -1,7 +1,7 @@
 return {
   "stevearc/conform.nvim",
   lazy = true,
-  event = { "BufReadPre", "BufNewFile" }, -- to disable, comment this out
+  event = "BufReadPre",
   config = function()
     local conform = require("conform")
 
@@ -24,7 +24,7 @@ return {
       },
       format_on_save = {
         lsp_fallback = true,
-        async = false,
+        async = true, -- Enable async formatting
         timeout_ms = 1000,
       },
     })
