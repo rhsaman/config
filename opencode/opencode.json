@@ -10,41 +10,42 @@
       "command": ["docker", "run", "-i", "--rm", "mcp/fetch"]
     }
   },
-  "keybinds": {
-    "thinking_blocks": "none"
-  },
+   "model": "ollama/qwen3:4b-instruct-2507-q4_K_M",
+   "keybinds": {
+     "thinking_blocks": "none"
+   },
 
-  "permission": {
-    "edit": "ask",
-    "bash": {
-      "git commit": "allow",
-      "git push": "ask",
-      "*": "ask"
-    },
-    "provider": {
-      "ollama": {
-        "npm": "@ai-sdk/openai-compatible",
-        "name": "Ollama (local)",
-        "options": {
-          "baseURL": "http://localhost:11434/v1"
-        },
-        "models": {
-          "qwen3:4b-instruct-2507-q4_K_M": {
-            "prompt": "Just answer questions concisely without extra explanations or offers of help. If the prompt contains a URL, use MCP tools. Use the web search tool if not information about it.",
-            "name": "qwen3:4b-instruct-2507-q4_K_M"
-          },
-          "qwen3:4b-thinking-2507-q4_K_M": {
-            "prompt": "Just answer questions concisely without extra explanations or offers of help. If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
-            "name": "qwen3:4b-thinking-2507-q4_K_M"
-          }
-        }
-      }
-    },
-    "agent": {
-      "build": {
-        "prompt": "If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
-        "mode": "primary"
-      }
-    }
-  }
+   "provider": {
+     "ollama": {
+       "npm": "@ai-sdk/openai-compatible",
+       "name": "Ollama (local)",
+       "options": {
+         "baseURL": "http://localhost:11434/v1"
+       },
+       "models": {
+         "qwen3:4b-instruct-2507-q4_K_M": {
+           "prompt": "You are opencode, an interactive CLI tool that helps users with software engineering tasks. Use tools via function calls to help you solve questions.",
+           "name": "qwen3:4b-instruct-2507-q4_K_M"
+         },
+         "qwen3:4b-instruct-2507-q8_0": {
+           "prompt": "You are opencode, an interactive CLI tool that helps users with software engineering tasks. Use tools via function calls to help you solve questions.",
+           "name": "qwen3:4b-instruct-2507-q8_0"
+         }
+       }
+     }
+   },
+   "permission": {
+     "edit": "ask",
+     "bash": {
+       "git commit": "allow",
+       "git push": "ask",
+       "*": "ask"
+     },
+     "agent": {
+       "build": {
+         "prompt": "If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
+         "mode": "primary"
+       }
+     }
+   }
 }
