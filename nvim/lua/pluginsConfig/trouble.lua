@@ -101,6 +101,8 @@ return {
 			-- or override like in the example below
 			lsp_references = {
 				-- some modes are configurable, see the source code for more details
+				focus = true,
+				win = { position = "right", size = 0.4 },
 				params = {
 					include_declaration = true,
 				},
@@ -109,6 +111,8 @@ return {
 			-- * lsp_definitions, lsp_references, lsp_implementations
 			-- * lsp_type_definitions, lsp_declarations, lsp_command
 			lsp_base = {
+				focus = true,
+				win = { position = "right", size = 0.4 },
 				params = {
 					-- don't include the current location in the results
 					include_current = false,
@@ -119,7 +123,7 @@ return {
 				title = false,
 				desc = "document symbols",
 				mode = "lsp_document_symbols",
-				focus = false,
+				focus = true,
 				win = { position = "right", size = 0.4 },
 				groups = {
 					{ "filename", format = "{file_icon} {basename:Title} {count}" },
@@ -205,12 +209,12 @@ return {
 		},
 		{
 			"<leader>ts",
-			"<cmd>Trouble symbols toggle focus=false<cr>",
+			"<cmd>Trouble symbols toggle<cr>",
 			desc = "Symbols",
 		},
 		{
 			"<leader>tl",
-			"<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+			"<cmd>Trouble lsp toggle win.position=right win.size=0.4<cr>",
 			desc = "LSP Definitions / references",
 		},
 		{
