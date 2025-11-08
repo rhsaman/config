@@ -276,14 +276,13 @@ return {
 
 		-- dart
 		vim.lsp.config("dartls", {
+			cmd = { "dart", "language-server", "--protocol=lsp" },
+			filetypes = { "dart" },
+			-- root_dir = root_pattern("pubspec.yaml"),
 			settings = {
 				dart = {
-					-- dartExcludedFolders = {
-					-- 	vim.fn.expand("$HOME/AppData/Local/Pub/Cache"),
-					-- 	vim.fn.expand("$HOME/.pub-cache"),
-					-- 	vim.fn.expand("/opt/homebrew/"),
-					-- 	vim.fn.expand("$HOME/tools/flutter/"),
-					-- },
+					completeFunctionCalls = true,
+					showTodos = false,
 				},
 			},
 		})

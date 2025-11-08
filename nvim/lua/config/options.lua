@@ -24,7 +24,7 @@ opt.termguicolors = true
 -- backspace
 opt.backspace = "indent,eol,start" -- allow backspace on indent, end of line or insert mode start position
 
-vim.opt.shadafile = vim.fn.stdpath("config") .. "/shada"
+-- vim.opt.shadafile = vim.fn.stdpath("config") .. "/shada"
 
 -- clipboard
 opt.clipboard:append("unnamedplus") -- use system clipboard as default register
