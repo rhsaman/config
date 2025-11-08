@@ -10,42 +10,38 @@
       "command": ["docker", "run", "-i", "--rm", "mcp/fetch"]
     }
   },
-   "model": "ollama/qwen3:4b-instruct-2507-q4_K_M",
-   "keybinds": {
-     "thinking_blocks": "none"
-   },
 
-   "provider": {
-     "ollama": {
-       "npm": "@ai-sdk/openai-compatible",
-       "name": "Ollama (local)",
-       "options": {
-         "baseURL": "http://localhost:11434/v1"
-       },
-       "models": {
-         "qwen3:4b-instruct-2507-q4_K_M": {
-           "prompt": "You are opencode, an interactive CLI tool that helps users with software engineering tasks. Use tools via function calls to help you solve questions.",
-           "name": "qwen3:4b-instruct-2507-q4_K_M"
-         },
-         "qwen3:4b-instruct-2507-q8_0": {
-           "prompt": "You are opencode, an interactive CLI tool that helps users with software engineering tasks. Use tools via function calls to help you solve questions.",
-           "name": "qwen3:4b-instruct-2507-q8_0"
-         }
-       }
-     }
-   },
-   "permission": {
-     "edit": "ask",
-     "bash": {
-       "git commit": "allow",
-       "git push": "ask",
-       "*": "ask"
-     },
-     "agent": {
-       "build": {
-         "prompt": "If the prompt contains a URL, use fetch. Use the web search tool if not information about it.",
-         "mode": "primary"
-       }
-     }
-   }
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "qwen3:4b-instruct-2507-q4_K_M": {
+          "prompt": "You are opencode, an interactive CLI tool that helps users with software engineering tasks. Use tools via function calls to help you solve questions.",
+          "name": "qwen3:4b-instruct-2507-q4_K_M"
+        },
+        "qwen3:4b-instruct-2507-q8_0": {
+          "prompt": "You are opencode, an interactive CLI tool that helps users with software engineering tasks. Use tools via function calls to help you solve questions.",
+          "name": "qwen3:4b-instruct-2507-q8_0"
+        }
+      }
+    }
+  },
+  "permission": {
+    "edit": "ask",
+    "bash": {
+      "git commit": "ask",
+      "git push": "ask",
+      "*": "ask"
+    },
+    "agent": {
+      "build": {
+        "prompt": "You are a professional coding assistant.Teach me how to implement each piece of code step by step, including the file name for every implementation.For every coding request, strictly follow my existing design pattern and architecture.All responses must be optimized, clean, and efficient — no redundant code.Always explain briefly why a certain approach or structure is used if it improves clarity or performance.commnet must be english on code",
+        "mode": "primary"
+      }
+    }
+  }
 }
