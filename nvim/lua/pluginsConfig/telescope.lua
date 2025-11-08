@@ -71,19 +71,19 @@ return {
 				-- Performance-optimized pickers
 				find_files = {
 					theme = "dropdown",
-					preview = false, -- Disable preview for file finder
+					preview = true, -- Disable preview for file finder
 					hidden = true, -- Include hidden files
 				},
 				live_grep = {
 					theme = "dropdown",
-					preview = false, -- Disable preview for grep
+					preview = true, -- Disable preview for grep
 					additional_args = function()
 						return { "--hidden" }
 					end,
 				},
 				buffers = {
 					theme = "dropdown",
-					preview = false, -- Disable preview for buffer picker
+					preview = true, -- Disable preview for buffer picker
 					sort_lastused = true, -- Sort by last used
 					mappings = {
 						i = {
@@ -96,7 +96,7 @@ return {
 				},
 				oldfiles = {
 					theme = "dropdown",
-					preview = false, -- Disable preview for oldfiles
+					preview = true, -- Disable preview for oldfiles
 				},
 			},
 			extensions = {
