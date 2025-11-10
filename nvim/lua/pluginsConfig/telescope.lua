@@ -44,6 +44,8 @@ return {
 					},
 				},
 				file_ignore_patterns = {
+					".venv/",
+					"vendor/",
 					".git/",
 					"node_modules/",
 					"%.jpg",
