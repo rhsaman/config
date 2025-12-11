@@ -17,6 +17,7 @@ return {
 				"stylua", -- lua formatter
 				"black", -- python formatter
 				"eslint_d", -- js linter
+				"kube-linter",
 			},
 		})
 

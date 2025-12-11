@@ -55,6 +55,7 @@ return {
 				"prettier", -- universal formatter
 				"stylua", -- lua formatter
 				"dart-debug-adapter", -- dart debugger (if supported by mason-tool-installer)
+				"kube-linter",
 			},
 		})
 	end,

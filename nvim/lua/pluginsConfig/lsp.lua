@@ -289,12 +289,12 @@ return {
 		vim.lsp.enable("dartls")
 
 		-- kubernetes
-		-- vim.lsp.config("yamlls", {
-		--   settings = {
-		--     yaml = {
-		--       schemas = { kubernetes = "globPattern" },
-		--     },
-		--   },
-		-- })
+		vim.lsp.config("yamlls", {
+			settings = {
+				yaml = {
+					schemas = { kubernetes = "globPattern" },
+				},
+			},
+		})
 	end,
 }
