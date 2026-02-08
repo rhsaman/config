@@ -278,7 +278,7 @@ return {
 		vim.lsp.config("dartls", {
 			cmd = { "dart", "language-server", "--protocol=lsp" },
 			filetypes = { "dart" },
-			root_dir = root_pattern("pubspec.yaml"),
+			root_dir = require("lspconfig.util").root_pattern("pubspec.yaml", ".git"),
 			settings = {
 				dart = {
 					completeFunctionCalls = true,
