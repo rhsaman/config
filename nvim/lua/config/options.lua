@@ -38,32 +38,16 @@ vim.g.rustfmt_autosave = 1
 
 -- vim.g.python3_host_prog = "/Users/saman/Documents/code/music/ai/.venv/bin/python"
 
--- workdir
--- local function setup_project_root()
---   local path = vim.fn.expand("%:p:h")
---   local git_dir = vim.fn.finddir(".git", path .. ";")
---   if git_dir ~= "" then
---     local root = vim.fn.fnamemodify(git_dir, ":h")
---     vim.cmd("cd " .. root)
---   else
---     vim.o.autochdir = true
---     print("Git not found: autochdir enabled")
---   end
--- end
--- setup_project_root()
+-- fold with treesitter
+opt.foldmethod = "expr"
+opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+opt.foldlevel = 99
+opt.foldenable = true
 
--- fold
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = "*",
+	pattern = { "NvimTree", "neo-tree", "dashboard", "alpha" },
 	callback = function()
-		-- List of file types where foldmethod should not be set
-		local exclude_filetypes = { "NvimTree", "neo-tree", "dashboard", "alpha" }
-		if not vim.tbl_contains(exclude_filetypes, vim.bo.filetype) then
-			-- Set foldmethod to 'indent' only for non-explorer files
-			opt.foldmethod = "indent"
-			opt.foldlevel = 99 -- Optional: keeps folds open by default
-			-- opt.foldenable = true
-		end
+		vim.opt_local.foldmethod = "manual"
 	end,
 })
 

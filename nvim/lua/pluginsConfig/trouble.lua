@@ -45,7 +45,7 @@ return {
 			q = "close",
 			o = "jump_close",
 			["<esc>"] = "cancel",
-			["<cr>"] = "jump",
+			["<cr>"] = "jump_close",
 			["<2-leftmouse>"] = "jump",
 			["<c-s>"] = "jump_split",
 			["<c-v>"] = "jump_vsplit",
@@ -124,7 +124,7 @@ return {
 				desc = "document symbols",
 				mode = "lsp_document_symbols",
 				focus = true,
-				win = { position = "right", size = 0.4 },
+				win = { position = "right", size = 0.3 },
 				groups = {
 					{ "filename", format = "{file_icon} {basename:Title} {count}" },
 				},
@@ -203,22 +203,22 @@ return {
 	cmd = "Trouble",
 	keys = {
 		{
-			"<leader>td",
+			"<leader>cd",
 			"<cmd>Trouble diagnostics toggle<cr>",
 			desc = "Diagnostics",
 		},
 		{
-			"<leader>ts",
+			"<leader>cs",
 			"<cmd>Trouble symbols toggle<cr>",
 			desc = "Symbols",
 		},
 		{
-			"<leader>tl",
+			"<leader>cl",
 			"<cmd>Trouble lsp toggle win.position=right win.size=0.4<cr>",
 			desc = "LSP Definitions / references",
 		},
 		{
-			"<leader>tq",
+			"<leader>cq",
 			"<cmd>Trouble qflist toggle<cr>",
 			desc = "Quickfix List",
 		},
