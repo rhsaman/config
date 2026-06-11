@@ -4,32 +4,87 @@ return {
 		or "make",
 	event = "VeryLazy",
 	version = false, -- Never set this value to "*"! Never!
+	cmd = {
+		"AvanteAsk",
+		"AvanteBuild",
+		"AvanteChat",
+		"AvanteClear",
+		"AvanteEdit",
+		"AvanteFocus",
+		"AvanteHistory",
+		"AvanteModels",
+		"AvanteRefresh",
+		"AvanteShowRepoMap",
+		"AvanteStop",
+		"AvanteSwitchProvider",
+		"AvanteToggle",
+	},
+	keys = {
+		{ "<leader>aa", "<cmd>AvanteAsk<CR>", desc = "Ask Avante" },
+		{ "<leader>az", "<cmd>lua require('avante.api').zen_mode()<CR>", desc = "Zen Mode" },
+		{ "<leader>ac", "<cmd>AvanteChat<CR>", desc = "Chat with Avante" },
+		{ "<leader>an", "<cmd>AvanteChatNew<CR>", desc = "New Chat with Avante" },
+		{ "<leader>ae", "<cmd>AvanteEdit<CR>", desc = "Edit with Avante" },
+		{ "<leader>af", "<cmd>AvanteFocus<CR>", desc = "Focus Avante" },
+		{ "<leader>ah", "<cmd>AvanteHistory<CR>", desc = "Avante History" },
+		{ "<leader>am", "<cmd>AvanteACPModes<CR>", desc = "Avante Mode" },
+		{ "<leader>aM", "<cmd>AvanteModels<CR>", desc = "Select Avante Model" },
+		{ "<leader>ap", "<cmd>AvanteSwitchProvider<CR>", desc = "Switch Avante Provider" },
+		{ "<leader>ar", "<cmd>AvanteRefresh<CR>", desc = "Refresh Avante" },
+		{ "<leader>as", "<cmd>AvanteStop<CR>", desc = "Stop Avante" },
+		{ "<leader>at", "<cmd>AvanteToggle<CR>", desc = "Toggle Avante" },
+	},
 	---@module 'avante'
 	opts = {
 		-- add any opts here
 		-- this file can contain specific instructions for your project
 		instructions_file = "avante.md",
 		-- for example
-		provider = "claude",
+		provider = "openrouter",
+		behaviour = {
+			auto_set_keymaps = false,
+		},
 		providers = {
-			claude = {
-				endpoint = "https://api.anthropic.com",
-				model = "claude-sonnet-4-20250514",
-				timeout = 30000, -- Timeout in milliseconds
-				extra_request_body = {
-					temperature = 0.75,
-					max_tokens = 20480,
-				},
-			},
-			moonshot = {
-				endpoint = "https://api.moonshot.ai/v1",
-				model = "kimi-k2-0711-preview",
-				timeout = 30000, -- Timeout in milliseconds
+			openrouter = {
+				__inherited_from = "openai",
+				api_key_name = "OPENROUTER_API_KEY",
+				endpoint = "https://openrouter.ai/api/v1",
+				model = "openrouter/free",
+				timeout = 30000,
+				allow_insecure = false,
+				disable_tools = true, -- openrouter/free از tool use پشتیبانی نمیکنه
 				extra_request_body = {
 					temperature = 0.75,
 					max_tokens = 32768,
 				},
 			},
+			-- lm_studio = {
+			-- 	__inherited_from = "openai",
+			-- 	endpoint = "http://localhost:1234/v1",
+			-- 	model = "google/gemma-4-e2b",
+			-- 	timeout = 60000,
+			-- 	allow_insecure = false,
+			-- 	disable_tools = false,
+			-- 	extra_request_body = {},
+			-- },
+			-- claude = {
+			-- 	endpoint = "https://api.anthropic.com",
+			-- 	model = "claude-sonnet-4-20250514",
+			-- 	timeout = 30000, -- Timeout in milliseconds
+			-- 	extra_request_body = {
+			-- 		temperature = 0.75,
+			-- 		max_tokens = 20480,
+			-- 	},
+			-- },
+			-- moonshot = {
+			-- 	endpoint = "https://api.moonshot.ai/v1",
+			-- 	model = "kimi-k2-0711-preview",
+			-- 	timeout = 30000, -- Timeout in milliseconds
+			-- 	extra_request_body = {
+			-- 		temperature = 0.75,
+			-- 		max_tokens = 32768,
+			-- 	},
+			-- },
 		},
 	},
 	dependencies = {
