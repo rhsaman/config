@@ -36,13 +36,15 @@ return {
 	},
 	---@module 'avante'
 	opts = {
+		mode = "legacy",
 		-- add any opts here
 		-- this file can contain specific instructions for your project
 		instructions_file = "avante.md",
 		-- for example
-		provider = "openrouter",
+		provider = "opencode",
 		behaviour = {
 			auto_set_keymaps = false,
+			auto_apply_diff_after_generation = false,
 		},
 		providers = {
 			openrouter = {
@@ -58,15 +60,18 @@ return {
 					max_tokens = 32768,
 				},
 			},
-			-- lm_studio = {
-			-- 	__inherited_from = "openai",
-			-- 	endpoint = "http://localhost:1234/v1",
-			-- 	model = "google/gemma-4-e2b",
-			-- 	timeout = 60000,
-			-- 	allow_insecure = false,
-			-- 	disable_tools = false,
-			-- 	extra_request_body = {},
-			-- },
+			lm_studio = {
+				__inherited_from = "openai",
+				endpoint = "http://localhost:1234/v1",
+				model = "google/gemma-4-e2b",
+				timeout = 60000,
+				allow_insecure = false,
+				disable_tools = false,
+				extra_request_body = {
+					temperature = 0.75,
+					max_tokens = 8000,
+				},
+			},
 			-- claude = {
 			-- 	endpoint = "https://api.anthropic.com",
 			-- 	model = "claude-sonnet-4-20250514",
