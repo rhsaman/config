@@ -160,7 +160,7 @@ return {
 								return "No staged changes found. Please stage your files first with `git add`."
 							end
 							return string.format(
-								"You are an expert at following the Conventional Commit specification. Given the git diff listed below, please generate a commit message, then run `git commit` with it.\n\n```diff\n%s\n```",
+								"You are an expert at following the Conventional Commit specification. Given the git diff listed below, generate a commit message, then run `git commit -m \"<message>\"` with the message inline. Do NOT run bare `git commit` without -m. If the message has multiple lines, use `-m` for the subject and `-m` for the body.\n\n```diff\n%s\n```",
 								diff
 							)
 						end,
