@@ -1,6 +1,5 @@
 return {
 	"olimorris/codecompanion.nvim",
-	version = "^19.0.0",
 	event = "VeryLazy",
 	cmd = {
 		"CodeCompanion",
@@ -10,11 +9,36 @@ return {
 		"CodeCompanionActions",
 	},
 	keys = {
-		{ "<leader>aa", "<cmd>CodeCompanionChat Toggle<cr>", desc = "Toggle AI Chat", mode = { "n", "v" } },
-		{ "<leader>ac", "<cmd>CodeCompanion<cr>", desc = "AI Inline Prompt", mode = { "n", "v" } },
-		{ "<leader>az", "<cmd>CodeCompanionChat<cr>", desc = "New AI Chat", mode = { "n", "v" } },
-		{ "<leader>ae", "<cmd>CodeCompanionActions<cr>", desc = "AI Actions (adapters/models)", mode = { "n", "v" } },
-		{ "<leader>ag", "<cmd>CodeCompanion /commit<cr>", desc = "Generate Commit Message", mode = { "n", "v" } },
+		{
+			"<leader>aa",
+			"<cmd>CodeCompanionChat Toggle<cr>",
+			desc = "Toggle AI Chat",
+			mode = { "n", "v" },
+		},
+		{
+			"<leader>ac",
+			"<cmd>CodeCompanion<cr>",
+			desc = "AI Inline Prompt",
+			mode = { "n", "v" },
+		},
+		{
+			"<leader>az",
+			"<cmd>CodeCompanionChat<cr>",
+			desc = "New AI Chat",
+			mode = { "n", "v" },
+		},
+		{
+			"<leader>ae",
+			"<cmd>CodeCompanionActions<cr>",
+			desc = "AI Actions (adapters/models)",
+			mode = { "n", "v" },
+		},
+		{
+			"<leader>ag",
+			"<cmd>CodeCompanion /commit<cr>",
+			desc = "Generate Commit Message",
+			mode = { "n", "v" },
+		},
 		{ "ga", "<cmd>CodeCompanionChat Add<cr>", desc = "Add to AI Chat", mode = "v" },
 	},
 	dependencies = {
@@ -105,6 +129,7 @@ return {
 						session_config_options = {
 							model = "deepseek-v4-flash-free",
 							mode = "build",
+							effort = "medium",
 						},
 					},
 				})
@@ -120,6 +145,21 @@ return {
 		interactions = {
 			chat = {
 				adapter = "opencode",
+				keymaps = {
+
+					submit = {
+						modes = { n = "<CR>", i = "<C-s>" },
+						callback = "keymaps.send",
+						description = "Submit the prompt",
+					},
+					-- Disable default stop (q) so q can be used for close
+					stop = false,
+					close = {
+						modes = { n = "q", i = "<Nop>" },
+						callback = "keymaps.close",
+						description = "Close the chat buffer",
+					},
+				},
 			},
 			inline = {
 				adapter = "openrouter",
@@ -130,16 +170,6 @@ return {
 			background = {
 				adapter = "opencode",
 			},
-
-		},
-
-		-- ---------------------------------------------------------------------------
-		-- custom keymaps inside chat buffer
-		-- ---------------------------------------------------------------------------
-		keymaps = {
-			-- submit = {
-			-- 	modes = { n = "<CR>", i = "<C-s>" },
-			-- },
 		},
 
 		prompt_library = {
@@ -159,15 +189,13 @@ return {
 					{
 						role = "user",
 						content = function()
-							local diff = vim
-								.system({ "git", "diff", "--no-ext-diff", "--staged" }, { text = true })
-								:wait()
-								.stdout
+							local diff = vim.system({ "git", "diff", "--no-ext-diff", "--staged" }, { text = true })
+								:wait().stdout
 							if diff == "" then
 								return "No staged changes found. Please stage your files first with `git add`."
 							end
 							return string.format(
-								"You are an expert at following the Conventional Commit specification. Given the git diff listed below, generate a commit message, then run `git commit -m \"<message>\"` with the message inline. Do NOT run bare `git commit` without -m. If the message has multiple lines, use `-m` for the subject and `-m` for the body.\n\n```diff\n%s\n```",
+								'You are an expert at following the Conventional Commit specification. Given the git diff listed below, generate a commit message, then run `git commit -m "<message>"` with the message inline. Do NOT run bare `git commit` without -m. If the message has multiple lines, use `-m` for the subject and `-m` for the body.\n\n```diff\n%s\n```',
 								diff
 							)
 						end,
@@ -175,7 +203,6 @@ return {
 				},
 			},
 		},
-
 	},
 
 	-- Expand 'cc' into 'CodeCompanion' in command-line
