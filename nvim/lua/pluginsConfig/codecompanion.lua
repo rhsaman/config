@@ -141,6 +141,7 @@ return {
 					auto_submit = true,
 					adapter = "lm_studio",
 				},
+				tools = { "run_command" },
 				prompts = {
 					{
 						role = "user",
@@ -149,6 +150,9 @@ return {
 								.system({ "git", "diff", "--no-ext-diff", "--staged" }, { text = true })
 								:wait()
 								.stdout
+							if diff == "" then
+								return "No staged changes found. Please stage your files first with `git add`."
+							end
 							return string.format(
 								"You are an expert at following the Conventional Commit specification. Given the git diff listed below, please generate a commit message, then run `git commit` with it.\n\n```diff\n%s\n```",
 								diff
