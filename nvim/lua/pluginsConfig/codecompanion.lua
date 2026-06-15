@@ -146,6 +146,7 @@ return {
 			-- },
 		},
 
+
 		prompt_library = {
 			["Commit message"] = {
 				interaction = "chat",
