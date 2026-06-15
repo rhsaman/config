@@ -139,7 +139,10 @@ return {
 				opts = {
 					alias = "commit",
 					auto_submit = true,
-					adapter = "lm_studio",
+					adapter = {
+						name = "lm_studio",
+						model = "qwen/qwen3-4b",
+					},
 				},
 				tools = { "run_command" },
 				prompts = {
