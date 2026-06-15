@@ -45,6 +45,11 @@ return {
 			action_palette = {
 				provider = "telescope",
 			},
+			chat = {
+				show_settings = true,
+				show_token_count = true,
+				show_tools_processing = true,
+			},
 		},
 
 		-- ---------------------------------------------------------------------------
@@ -110,6 +115,8 @@ return {
 		-- adapter پیش‌فرض
 		-- ---------------------------------------------------------------------------
 		-- نکته: Inline فقط HTTP adapter پشتیبانی می‌کنه، پس ACP (opencode) براش کار نمی‌کنه
+		-- نکته: Chat با HTTP adapter (openrouter) استریم میشه و جواب رو لحظه‌ای می‌بینی
+		--        ولی ACP (opencode) لودینگ نشون نمیده و تا آخر جواب صبر می‌کنه
 		interactions = {
 			chat = {
 				adapter = "opencode",
@@ -174,5 +181,56 @@ return {
 	-- Expand 'cc' into 'CodeCompanion' in command-line
 	init = function()
 		vim.cmd([[cab cc CodeCompanion]])
+	end,
+
+	-- تنظیمات بعد از لود شدن plugin (شامل status indicator برای ACP)
+	config = function(_, opts)
+		require("codecompanion").setup(opts)
+
+		-- ── Status indicator برای ACP chat (چون لودینگ نداره) ──
+		local Group = vim.api.nvim_create_augroup("CodeCompanionStatus", { clear = true })
+		local request_active = false
+
+		vim.api.nvim_create_autocmd("User", {
+			group = Group,
+			pattern = "ChatSubmitted",
+			callback = function(args)
+				if args.data and args.data.type == "acp" then
+					request_active = true
+					vim.notify("🤖 Runing...", vim.log.levels.INFO, {
+						title = "CodeCompanion",
+						timeout = false,
+					})
+				end
+			end,
+		})
+
+		vim.api.nvim_create_autocmd("User", {
+			group = Group,
+			pattern = "ChatDone",
+			callback = function()
+				if request_active then
+					request_active = false
+					vim.notify("✅ Completed", vim.log.levels.INFO, {
+						title = "CodeCompanion",
+						timeout = 3000,
+					})
+				end
+			end,
+		})
+
+		vim.api.nvim_create_autocmd("User", {
+			group = Group,
+			pattern = "ChatStopped",
+			callback = function()
+				if request_active then
+					request_active = false
+					vim.notify("⏹️ Stopped!", vim.log.levels.WARN, {
+						title = "CodeCompanion",
+						timeout = 3000,
+					})
+				end
+			end,
+		})
 	end,
 }
