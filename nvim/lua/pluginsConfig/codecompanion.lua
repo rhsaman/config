@@ -121,6 +121,20 @@ return {
 			background = {
 				adapter = "opencode",
 			},
+			actions = {
+				adapter = "opencode",
+			},
+			cli = {
+				adapter = "opencode",
+			},
+			commit = {
+				adapter = "lm_studio",
+				opts = {
+					model = "qwen/qwen3-4b",
+					auto_submit = true,
+				},
+			},
+
 		},
 
 		-- ---------------------------------------------------------------------------
@@ -136,14 +150,14 @@ return {
 			["Commit message"] = {
 				interaction = "chat",
 				description = "Generate and apply a commit message",
-				opts = {
-					alias = "commit",
-					auto_submit = true,
-					adapter = {
-						name = "lm_studio",
-						model = "qwen/qwen3-4b",
-					},
-				},
+				-- opts = {
+				-- 	alias = "commit",
+				-- 	auto_submit = true,
+				-- 	adapter = {
+				-- 		name = "lm_studio",
+				-- 		model = "qwen/qwen3-4b",
+				-- 	},
+				-- },
 				tools = { "run_command" },
 				prompts = {
 					{
