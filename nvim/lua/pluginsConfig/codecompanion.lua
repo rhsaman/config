@@ -20,6 +20,7 @@ return {
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 		"nvim-treesitter/nvim-treesitter",
+		"hrsh7th/nvim-cmp",
 		{
 			"MeanderingProgrammer/render-markdown.nvim",
 			opts = {
@@ -108,12 +109,13 @@ return {
 		-- ---------------------------------------------------------------------------
 		-- adapter پیش‌فرض
 		-- ---------------------------------------------------------------------------
+		-- نکته: Inline فقط HTTP adapter پشتیبانی می‌کنه، پس ACP (opencode) براش کار نمی‌کنه
 		interactions = {
 			chat = {
 				adapter = "opencode",
 			},
 			inline = {
-				adapter = "opencode",
+				adapter = "openrouter",
 			},
 			cmd = {
 				adapter = "opencode",
@@ -167,9 +169,6 @@ return {
 			},
 		},
 
-		opts = {
-			-- log_level = "DEBUG",
-		},
 	},
 
 	-- Expand 'cc' into 'CodeCompanion' in command-line
