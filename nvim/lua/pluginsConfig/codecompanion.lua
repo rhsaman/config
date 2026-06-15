@@ -133,8 +133,29 @@ return {
 		},
 
 		prompt_library = {
-			markdown = {
-				dirs = { "~/.config/nvim/.prompts" },
+			["Commit message"] = {
+				interaction = "chat",
+				description = "Generate and apply a commit message",
+				opts = {
+					alias = "commit",
+					auto_submit = true,
+					adapter = "lm_studio",
+				},
+				prompts = {
+					{
+						role = "user",
+						content = function()
+							local diff = vim
+								.system({ "git", "diff", "--no-ext-diff", "--staged" }, { text = true })
+								:wait()
+								.stdout
+							return string.format(
+								"You are an expert at following the Conventional Commit specification. Given the git diff listed below, please generate a commit message, then run `git commit` with it.\n\n```diff\n%s\n```",
+								diff
+							)
+						end,
+					},
+				},
 			},
 		},
 
