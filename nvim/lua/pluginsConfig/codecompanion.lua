@@ -126,7 +126,6 @@ return {
 					defaults = {
 						session_config_options = {
 							model = "deepseek-v4-flash-free",
-							default_agent = "build",
 						},
 					},
 				})
@@ -155,6 +154,7 @@ return {
 					},
 				},
 			},
+
 		},
 	},
 
