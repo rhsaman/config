@@ -158,8 +158,4 @@ return {
 		},
 	},
 
-	-- Expand 'cc' into 'CodeCompanion' in command-line
-	init = function()
-		vim.cmd([[cab cc CodeCompanion]])
-	end,
 }
