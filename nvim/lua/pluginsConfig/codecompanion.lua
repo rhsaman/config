@@ -127,14 +127,6 @@ return {
 						session_config_options = {
 							model = "deepseek-v4-flash-free",
 							default_agent = "build",
-							agent = {
-								build = {
-									variant = "medium",
-								},
-								plan = {
-									variant = "medium",
-								},
-							},
 						},
 					},
 				})
@@ -142,11 +134,8 @@ return {
 		},
 
 		-- ---------------------------------------------------------------------------
-		-- adapter پیش‌فرض
+		-- default adapter
 		-- ---------------------------------------------------------------------------
-		-- نکته: Inline فقط HTTP adapter پشتیبانی می‌کنه، پس ACP (opencode) براش کار نمی‌کنه
-		-- نکته: Chat با HTTP adapter (openrouter) استریم میشه و جواب رو لحظه‌ای می‌بینی
-		--        ولی ACP (opencode) لودینگ نشون نمیده و تا آخر جواب صبر می‌کنه
 		interactions = {
 			chat = {
 				adapter = "opencode",
@@ -166,17 +155,7 @@ return {
 					},
 				},
 			},
-			inline = {
-				adapter = "openrouter",
-			},
-			cmd = {
-				adapter = "opencode",
-			},
-			background = {
-				adapter = "opencode",
-			},
 		},
-
 	},
 
 	-- Expand 'cc' into 'CodeCompanion' in command-line
