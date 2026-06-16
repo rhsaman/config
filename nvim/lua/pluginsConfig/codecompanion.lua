@@ -93,7 +93,7 @@ return {
 						},
 						schema = {
 							model = {
-								default = "openai/gpt-oss-120b:free",
+								default = "openrouter/free",
 							},
 						},
 					})
@@ -109,7 +109,7 @@ return {
 						},
 						schema = {
 							model = {
-								default = "qwen2.5-coder-1.5b-instruct",
+								default = "qwen/qwen3-4b", --qwen/qwen3-4b
 							},
 						},
 					})
@@ -139,7 +139,6 @@ return {
 			chat = {
 				adapter = "opencode",
 				keymaps = {
-
 					submit = {
 						modes = { n = "<CR>", i = "<C-s>" },
 						callback = "keymaps.send",
@@ -153,9 +152,16 @@ return {
 						description = "Close the chat buffer",
 					},
 				},
+				show_tools_processing = true,
+				show_context = true,
 			},
 
+			inline = {
+				adapter = "opencode",
+			},
+			cmd = {
+				adapter = "opencode",
+			},
 		},
 	},
-
 }
