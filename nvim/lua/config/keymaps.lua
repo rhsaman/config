@@ -6,18 +6,18 @@ local keymap = vim.keymap
 keymap.set("n", "<Esc>", "<cmd>nohls<cr>", { desc = "nohls" })
 
 -- autoSession
-keymap.set("n", "<leader>wr", ":SessionRestore<CR>", { desc = "Restore session for cwd" }) -- restore last workspace session for current directory
+keymap.set("n", "<leader>wr", ":SessionRestore<CR>", { desc = "Restore session for cwd" })             -- restore last workspace session for current directory
 keymap.set("n", "<leader>ws", ":SessionSave<CR>", { desc = "Save session for auto session root dir" }) -- save workspace session for current working directory
 
 -- lsp
 
 -- inlay_hint
 vim.keymap.set("n", "<leader>i", function()
-	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 end, { desc = "Toggle inlay hints" })
 
-keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "See available code actions" }) -- see available code actions, in visual mode will apply to selection
-keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", { desc = "Go to LSP definition", silent = true }) -- show lsp type definitions (more efficient than Telescope)
+keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "See available code actions" })                      -- see available code actions, in visual mode will apply to selection
+keymap.set("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", { desc = "Go to LSP definition", silent = true })     -- show lsp type definitions (more efficient than Telescope)
 keymap.set("n", "gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", { desc = "Go to implementation", silent = true }) -- go to declaration
 keymap.set("n", "<C-k>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", { desc = "Show signature help", silent = true })
 keymap.set("i", "<C-k>", "<cmd>lua vim.lsp.buf.signature_help()<CR>", { desc = "Show signature help", silent = true })
@@ -36,23 +36,23 @@ keymap.set("n", "<C-w>k", "<C-w>10+", { desc = "Resize window down" })
 
 -- telescope git commands (not on youtube nvim video)
 keymap.set(
-	"n",
-	"<leader>gsc",
-	"<cmd>Telescope git_commits<cr>",
-	{ desc = "list all git commits (use <cr> to checkout)" }
+  "n",
+  "<leader>gsc",
+  "<cmd>Telescope git_commits<cr>",
+  { desc = "list all git commits (use <cr> to checkout)" }
 )
 keymap.set(
-	"n",
-	"<leader>gsC",
-	"<cmd>Telescope git_bcommits<cr>",
-	{ desc = "list git commits for current file/buffer (use <cr> to checkout)" }
+  "n",
+  "<leader>gsC",
+  "<cmd>Telescope git_bcommits<cr>",
+  { desc = "list git commits for current file/buffer (use <cr> to checkout)" }
 )
 keymap.set("n", "<leader>gsb", "<cmd>Telescope git_branches<cr>", { desc = "list git branches (use <cr> to checkout)" })
 keymap.set(
-	"n",
-	"<leader>gss",
-	"<cmd>Telescope git_status<cr>",
-	{ desc = "list current changes per file with diff preview" }
+  "n",
+  "<leader>gss",
+  "<cmd>Telescope git_status<cr>",
+  { desc = "list current changes per file with diff preview" }
 )
 
 -- harpoon
@@ -70,6 +70,6 @@ keymap.set("n", "<leader>fd", "<cmd>lua vim.diagnostic.open_float()<CR>", { desc
 keymap.set("n", "<leader>fl", "<cmd>Telescope lsp_document_symbols<cr>", { desc = "list symbols", silent = true })
 
 -- toggle rtl
-keymap.set("n", "<leadel>l", function()
-	vim.o.rightleft = not vim.o.rightleft
+keymap.set("n", "<leader>l", function()
+  vim.o.rightleft = not vim.o.rightleft
 end, { desc = "Toggle right-to-left mode" })

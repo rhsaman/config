@@ -70,7 +70,7 @@ return {
 				provider = "telescope",
 			},
 			chat = {
-				show_settings = true,
+				show_settings = false,
 				show_token_count = true,
 				show_tools_processing = true,
 			},
@@ -84,6 +84,8 @@ return {
 				-- OpenRouter (مشابه اون چیزی که توی avante.lua داری)
 				openrouter = function()
 					return require("codecompanion.adapters").extend("openai_compatible", {
+						name = "openrouter",
+						formatted_name = "OpenRouter",
 						env = {
 							url = "https://openrouter.ai/api",
 							api_key = "OPENROUTER_API_KEY",
@@ -91,11 +93,7 @@ return {
 						},
 						schema = {
 							model = {
-								default = "openrouter/free",
-								choices = {
-									["openrouter/free"] = {},
-									["openai/gpt-oss-120b:free"] = {},
-								},
+								default = "openai/gpt-oss-120b:free",
 							},
 						},
 					})
@@ -128,8 +126,15 @@ return {
 					defaults = {
 						session_config_options = {
 							model = "deepseek-v4-flash-free",
-							mode = "build",
-							effort = "medium",
+							default_agent = "build",
+							agent = {
+								build = {
+									variant = "medium",
+								},
+								plan = {
+									variant = "medium",
+								},
+							},
 						},
 					},
 				})
@@ -171,42 +176,41 @@ return {
 				adapter = "opencode",
 			},
 		},
-
-		prompt_library = {
-			["Commit message"] = {
-				interaction = "chat",
-				description = "Generate and apply a commit message",
-				opts = {
-					alias = "commit",
-					auto_submit = true,
-					adapter = {
-						name = "lm_studio",
-						model = "qwen/qwen3-4b",
-					},
-				},
-				tools = { "run_command" },
-				prompts = {
-					{
-						role = "user",
-						content = function()
-							local diff = vim.system({ "git", "diff", "--no-ext-diff", "--staged" }, { text = true })
-								:wait().stdout
-							if diff == "" then
-								return "No staged changes found. Please stage your files first with `git add`."
-							end
-							return string.format(
-								'You are an expert at following the Conventional Commit specification. Given the git diff listed below, generate a commit message, then run `git commit -m "<message>"` with the message inline. Do NOT run bare `git commit` without -m. If the message has multiple lines, use `-m` for the subject and `-m` for the body.\n\n```diff\n%s\n```',
-								diff
-							)
-						end,
-					},
-				},
-			},
-		},
 	},
 
 	-- Expand 'cc' into 'CodeCompanion' in command-line
 	init = function()
 		vim.cmd([[cab cc CodeCompanion]])
+	end,
+
+	config = function(_, opts)
+		require("codecompanion").setup(opts)
+
+		-- ----------------------------------------------------------------
+		-- Monkey-patch: Make visual selection visible in inline prompts
+		-- و visual selection که سلکت کردی رو ببینهLLM مطمئن میشه
+		-- ----------------------------------------------------------------
+		local Inline = require("codecompanion.interactions.inline")
+		local orig_make_ext_prompts = Inline.make_ext_prompts
+
+		function Inline:make_ext_prompts()
+			local prompts = orig_make_ext_prompts(self)
+			if prompts then
+				for _, p in ipairs(prompts) do
+					if p._meta and p._meta.tag == "visual" and p.opts then
+						p.opts.visible = true
+						-- Add filename to the context message for clarity
+						local filename = self.buffer_context.filename or ""
+						if filename ~= "" then
+							p.content = p.content:gsub(
+								"in the buffer",
+								"in " .. filename
+							)
+						end
+					end
+				end
+			end
+			return prompts
+		end
 	end,
 }
