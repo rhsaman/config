@@ -176,41 +176,11 @@ return {
 				adapter = "opencode",
 			},
 		},
+
 	},
 
 	-- Expand 'cc' into 'CodeCompanion' in command-line
 	init = function()
 		vim.cmd([[cab cc CodeCompanion]])
-	end,
-
-	config = function(_, opts)
-		require("codecompanion").setup(opts)
-
-		-- ----------------------------------------------------------------
-		-- Monkey-patch: Make visual selection visible in inline prompts
-		-- و visual selection که سلکت کردی رو ببینهLLM مطمئن میشه
-		-- ----------------------------------------------------------------
-		local Inline = require("codecompanion.interactions.inline")
-		local orig_make_ext_prompts = Inline.make_ext_prompts
-
-		function Inline:make_ext_prompts()
-			local prompts = orig_make_ext_prompts(self)
-			if prompts then
-				for _, p in ipairs(prompts) do
-					if p._meta and p._meta.tag == "visual" and p.opts then
-						p.opts.visible = true
-						-- Add filename to the context message for clarity
-						local filename = self.buffer_context.filename or ""
-						if filename ~= "" then
-							p.content = p.content:gsub(
-								"in the buffer",
-								"in " .. filename
-							)
-						end
-					end
-				end
-			end
-			return prompts
-		end
 	end,
 }
