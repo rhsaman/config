@@ -15,7 +15,7 @@ return {
 					accept_n_lines = "<M-z>",
 					prev = "<M-[>",
 					next = "<M-]>",
-					dismiss = "<M-e>",
+					dismiss = "<C-e>",
 				},
 			},
 			-- Tunings for local models (slow response, limited context)
