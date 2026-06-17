@@ -5,9 +5,42 @@
   "agent": {
     "build": {
       "variant": "medium"
+    },
+    "vision": {
+      "description": "Vision-capable agent for image analysis using OpenRouter free models",
+      "mode": "subagent",
+      "model": "openrouter/openrouter/free"
+    },
+    "vision-chat": {
+      "description": "Vision-capable agent using local LMStudio model",
+      "mode": "primary",
+      "model": "openrouter/openrouter/free"
     }
   },
   "provider": {
+    "openrouter": {
+      "options": {
+        "apiKey": "{env:OPENROUTER_API_KEY}"
+      },
+      "models": {
+        "openrouter/free": {
+          "name": "openrouter free"
+        }
+      }
+    },
+    "my-local": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "My Local (LM Studio)",
+      "options": {
+        "baseURL": "http://localhost:1234/v1",
+        "apiKey": "not-needed"
+      },
+      "models": {
+        "google/gemma-4-e2b": {
+          "name": "Gemma 4 E2B (Local)"
+        }
+      }
+    },
     "cloudflare-workers-ai": {
       "options": {
         "baseURL": "https://api.cloudflare.com/client/v4/accounts/{env:CLOUDFLARE_ACCOUNT_ID}/ai/v1",
