@@ -1,13 +1,23 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "opencode/deepseek-v4-flash-free",
-  "default_agent": "build",
+  "default_agent": "plan",
   "agent": {
     "build": {
       "variant": "medium"
-    },
-    "plan": {
-      "variant": "medium"
+    }
+  },
+  "provider": {
+    "cloudflare-workers-ai": {
+      "options": {
+        "baseURL": "https://api.cloudflare.com/client/v4/accounts/{env:CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+        "apiKey": "{env:CLOUDFLARE_AUTH_TOKEN}"
+      },
+      "models": {
+        "@cf/moonshotai/kimi-k2.7-code": {
+          "name": "Kimi K2.7 Code"
+        }
+      }
     }
   }
 }
