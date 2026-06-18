@@ -1,10 +1,19 @@
 return {
 	"tpope/vim-fugitive",
-	cmd = { "Git", "Gdiffsplit", "Gvdiffsplit", "Gread", "Gwrite", "Ggrep", "GMove", "GDelete", "GRename" },
+	dependencies = {
+		"tpope/vim-rhubarb",
+	},
+	cmd = { "Git", "Gdiffsplit", "Gvdiffsplit", "Gread", "Gwrite", "Ggrep", "GMove", "GDelete", "GRename", "GBrowse" },
 	keys = {
 		{ "<leader>ga", ":Git add .<cr>", desc = "Git add", silent = true },
-		{ "<leader>gi", "<cmd>:Git<cr>", desc = "fugitive", silent = true },
+		{ "<leader>gi", "<cmd>:Git<cr>", desc = "Git status", silent = true },
+		{ "<leader>gd", ":Git diff<cr>", desc = "Git diff", silent = true },
+		{ "<leader>gb", ":Gblame<cr>", desc = "Git blame", silent = true },
+		{ "<leader>gl", ":Glog<cr>", desc = "Git log", silent = true },
+		{ "<leader>gp", ":Gpush<cr>", desc = "Git push", silent = true },
+		{ "<leader>gP", ":Gpull<cr>", desc = "Git pull", silent = true },
 		{ "<leader>gc", "<cmd>GenerateCommit<cr>", desc = "Generate commit message (OpenRouter)", silent = true },
+		{ "<leader>gB", ":GBrowse<cr>", desc = "Open in browser", silent = true },
 	},
 	config = function()
 		-- Generate commit message using OpenRouter
