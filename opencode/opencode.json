@@ -10,11 +10,6 @@
       "description": "Vision-capable agent for image analysis using OpenRouter free models",
       "mode": "subagent",
       "model": "openrouter/openrouter/free"
-    },
-    "vision-chat": {
-      "description": "Vision-capable agent using local LMStudio model",
-      "mode": "primary",
-      "model": "openrouter/openrouter/free"
     }
   },
   "provider": {
