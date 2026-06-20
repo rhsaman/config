@@ -51,7 +51,7 @@
   //       "maxLiveTerminals" : 12
   //     },
   //     "resumeCommands" : [
-  // 
+  //
   //     ],
   //     "rendererRealization" : {
   //       "maxWarmRenderers" : 12,
@@ -62,15 +62,15 @@
 
   //   "notifications" : {
   //     "showInMenuBar" : true,
-  //     "unreadPaneRing" : true,
+  "unreadPaneRing": true
   //     "command" : "",
   //     "hooks" : [
-  // 
+  //
   //     ],
   //     "hooksMode" : "append",
   //     "dockBadge" : true,
   //     "sound" : "default",
-  //     "paneFlash" : true,
+       "paneFlash" : true,
   //     "customSoundFilePath" : ""
   //   },
 
@@ -156,12 +156,12 @@
   //     "customSearchEngineName" : "",
   //     "theme" : "system",
   //     "urlsToAlwaysOpenExternally" : [
-  // 
+  //
   //     ],
   //     "showImportHintOnBlankTabs" : true,
   //     "hiddenWebViewDiscardDelaySeconds" : 300,
   //     "hostsToOpenInEmbeddedBrowser" : [
-  // 
+  //
   //     ],
   //     "discardHiddenWebViews" : true,
   //     "showSearchSuggestions" : true,
@@ -173,8 +173,8 @@
 
   //   "markdown" : {
   //     "maxWidth" : 980,
-  //     "fontSize" : 15,
-  //     "fontFamily" : ""
+       "fontSize" : 15,
+       "fontFamily" : "JetBrains Mono"
   //   },
 
   //   "fileEditor" : {
@@ -230,7 +230,7 @@
   //       "focusRight" : "cmd+opt+→",
   //       "openDiffViewer" : "cmd+shift+ctrl+d",
   //       "toggleSplitZoom" : "cmd+shift+\r",
-  //       "canvasRevealFocusedPane" : "cmd+ctrl+r",
+         "canvasRevealFocusedPane" : "cmd+ctrl+r",
   //       "renameWorkspace" : "cmd+shift+r",
   //       "focusUp" : "cmd+opt+↑",
   //       "newSurface" : "cmd+t",
