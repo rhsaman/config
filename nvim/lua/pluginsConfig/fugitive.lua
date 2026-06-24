@@ -38,7 +38,7 @@ return {
 			end
 
 			local prompt = {
-				model = "openrouter/free",
+				model = "openrouter/owl-alpha",
 				messages = {
 					{
 						role = "system",
@@ -49,7 +49,7 @@ return {
 						content = "Generate a commit message for this diff:\n\n" .. diff,
 					},
 				},
-				temperature = 0.1,
+				temperature = 0.7,
 				max_tokens = 128,
 			}
 
@@ -87,7 +87,10 @@ return {
 			end
 
 			local commit_msg = json.choices[1].message.content
-			-- Clean up the message
+			if type(commit_msg) ~= "string" or commit_msg == "" then
+				vim.notify("API returned empty or null content", vim.log.levels.ERROR)
+				return
+			end
 			commit_msg = vim.trim(commit_msg)
 			commit_msg = commit_msg:gsub("^```", ""):gsub("```$", "")
 			commit_msg = vim.trim(commit_msg)
