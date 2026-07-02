@@ -38,7 +38,7 @@ return {
 			end
 
 			local prompt = {
-				model = "openrouter/owl-alpha",
+				model = "openrouter/free",
 				messages = {
 					{
 						role = "system",
