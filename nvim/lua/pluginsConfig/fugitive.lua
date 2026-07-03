@@ -29,7 +29,7 @@ return {
 				return
 			end
 
-			local max_diff_len = 4096
+			local max_diff_len = 8192
 			if #diff > max_diff_len then
 				diff = diff:sub(1, max_diff_len) .. "\n# ... diff truncated due to size"
 			end

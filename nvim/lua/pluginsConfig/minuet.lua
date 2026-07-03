@@ -21,7 +21,7 @@ return {
 				},
 			},
 			n_completions = 1,
-			context_window = 4096,
+			context_window = 8192,
 			throttle = 200,
 			debounce = 100,
 			request_timeout = 10,
@@ -35,7 +35,6 @@ return {
 					template = require("minuet.config").default_fim_template,
 					optional = {
 						max_tokens = 256,
-						temperature = 0,
 					},
 				},
 			},
