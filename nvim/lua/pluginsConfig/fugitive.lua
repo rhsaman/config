@@ -29,10 +29,15 @@ return {
 				return
 			end
 
+			local max_diff_len = 4096
+			if #diff > max_diff_len then
+				diff = diff:sub(1, max_diff_len) .. "\n# ... diff truncated due to size"
+			end
+
 			vim.notify("Generating commit message from staged changes...", vim.log.levels.INFO)
 
 			local prompt = {
-				model = "qwen2.5-coder-3b-instruct",
+				model = "deepseek-coder-1.3b-instruct",
 				messages = {
 					{
 						role = "system",

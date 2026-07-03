@@ -5,7 +5,7 @@ return {
 		local mc = require("minuet.config")
 
 		require("minuet").setup({
-			provider = "openai_compatible",
+			provider = "openai_fim_compatible",
 			blink = {
 				enable_auto_complete = true,
 			},
@@ -20,26 +20,23 @@ return {
 					dismiss = "<C-e>",
 				},
 			},
-			-- Tunings for local models (slow response, limited context)
+			n_completions = 1,
 			context_window = 4096,
-			throttle = 600,
-			debounce = 300,
+			throttle = 200,
+			debounce = 100,
 			request_timeout = 10,
 			provider_options = {
-				openai_compatible = {
-					name = "LMStudio",
-					end_point = "http://localhost:1234/v1/chat/completions",
-					model = "qwen2.5-coder-3b-instruct",
+				openai_fim_compatible = {
+					end_point = "http://localhost:1234/v1/completions",
+					model = "deepseek-coder-1.3b-instruct",
 					api_key = "TERM",
+					name = "LMStudio",
+					stream = true,
+					template = require("minuet.config").default_fim_template,
 					optional = {
 						max_tokens = 256,
-						top_p = 0.9,
+						temperature = 0,
 					},
-
-					system = mc.default_system_prefix_first,
-					chat_input = mc.default_chat_input_prefix_first,
-					few_shots = mc.default_few_shots_prefix_first,
-					stream = true,
 				},
 			},
 		})
