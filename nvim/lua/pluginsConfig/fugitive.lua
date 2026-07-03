@@ -12,11 +12,11 @@ return {
 		{ "<leader>gl", ":Glog<cr>", desc = "Git log", silent = true },
 		{ "<leader>gp", ":Gpush<cr>", desc = "Git push", silent = true },
 		{ "<leader>gP", ":Gpull<cr>", desc = "Git pull", silent = true },
-		{ "<leader>gc", "<cmd>GenerateCommit<cr>", desc = "Generate commit message (OpenRouter)", silent = true },
+		{ "<leader>gc", "<cmd>GenerateCommit<cr>", desc = "Generate commit message (LM Studio)", silent = true },
 		{ "<leader>gB", ":GBrowse<cr>", desc = "Open in browser", silent = true },
 	},
 	config = function()
-		-- Generate commit message using OpenRouter
+		-- Generate commit message using LM Studio
 		vim.api.nvim_create_user_command("GenerateCommit", function()
 			-- Get staged diff
 			local diff = vim.fn.system("git diff --cached")
@@ -31,14 +31,8 @@ return {
 
 			vim.notify("Generating commit message from staged changes...", vim.log.levels.INFO)
 
-			local api_key = vim.fn.getenv("OPENROUTER_API_KEY")
-			if not api_key or api_key == "" then
-				vim.notify("OPENROUTER_API_KEY not set", vim.log.levels.ERROR)
-				return
-			end
-
 			local prompt = {
-				model = "openrouter/free",
+				model = "qwen2.5-coder-3b-instruct",
 				messages = {
 					{
 						role = "system",
@@ -60,15 +54,13 @@ return {
 			local result = vim.fn.system({
 				"curl",
 				"-s",
+				"--max-time",
+				"30",
 				"-X",
 				"POST",
-				"https://openrouter.ai/api/v1/chat/completions",
+				"http://127.0.0.1:1234/v1/chat/completions",
 				"-H",
 				"Content-Type: application/json",
-				"-H",
-				"Authorization: Bearer " .. api_key,
-				"-H",
-				"HTTP-Referer: https://github.com",
 				"-d",
 				"@" .. tmpfile,
 			})
@@ -78,11 +70,12 @@ return {
 			pcall(vim.fn.delete, tmpfile)
 
 			local ok, json = pcall(vim.fn.json_decode, output)
-			if not ok or not json.choices or #json.choices == 0 then
-				vim.notify(
-					"Failed to get response from OpenRouter. Error: " .. (json.error or output),
-					vim.log.levels.ERROR
-				)
+			if not ok then
+				vim.notify("Failed to parse LM Studio response: " .. output, vim.log.levels.ERROR)
+				return
+			end
+			if not json.choices or #json.choices == 0 then
+				vim.notify("LM Studio error: " .. (json.error or "no choices in response"), vim.log.levels.ERROR)
 				return
 			end
 
@@ -111,6 +104,6 @@ return {
 			else
 				vim.notify("Commit failed: " .. vim.trim(ret), vim.log.levels.ERROR)
 			end
-		end, { desc = "Generate commit message using OpenRouter" })
+		end, { desc = "Generate commit message using LM Studio" })
 	end,
 }
