@@ -12,7 +12,7 @@ return {
 		{ "<leader>gl", ":Glog<cr>", desc = "Git log", silent = true },
 		{ "<leader>gp", ":Gpush<cr>", desc = "Git push", silent = true },
 		{ "<leader>gP", ":Gpull<cr>", desc = "Git pull", silent = true },
-		{ "<leader>gc", "<cmd>GenerateCommit<cr>", desc = "Generate commit message (LM Studio)", silent = true },
+		{ "<leader>gc", "<cmd>GenerateCommit<cr>", desc = "Generate commit message", silent = true },
 		{ "<leader>gB", ":GBrowse<cr>", desc = "Open in browser", silent = true },
 	},
 	config = function()
@@ -37,7 +37,7 @@ return {
 			vim.notify("Generating commit message from staged changes...", vim.log.levels.INFO)
 
 			local prompt = {
-				model = "deepseek-coder-1.3b-instruct",
+				model = "gemma-4-e2b",
 				messages = {
 					{
 						role = "system",
@@ -80,7 +80,11 @@ return {
 				return
 			end
 			if not json.choices or #json.choices == 0 then
-				vim.notify("LM Studio error: " .. (json.error or "no choices in response"), vim.log.levels.ERROR)
+				local err = json.error
+				if type(err) == "table" then
+					err = vim.inspect(err)
+				end
+				vim.notify("LM Studio error: " .. (err or "no choices in response"), vim.log.levels.ERROR)
 				return
 			end
 
