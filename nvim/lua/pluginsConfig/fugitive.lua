@@ -48,8 +48,8 @@ return {
 						content = "Generate a commit message for this diff:\n\n" .. diff,
 					},
 				},
-				temperature = 0.8,
-				max_tokens = 126,
+				temperature = 0.7,
+				max_tokens = 56,
 			}
 
 			-- Write JSON payload to temp file to avoid shell escaping issues
