@@ -9,7 +9,7 @@
     "vision": {
       "description": "Vision-capable agent for image analysis using OpenRouter free models",
       "mode": "subagent",
-      "model": "openrouter/openrouter/free"
+      "model": "qwen3.5-4b"
     }
   },
   "provider": {
@@ -32,7 +32,7 @@
       },
       "models": {
         "google/gemma-4-e2b": {
-          "name": "Gemma 4 E2B (Local)"
+          "name": "qwen3.5-4b"
         }
       }
     },
