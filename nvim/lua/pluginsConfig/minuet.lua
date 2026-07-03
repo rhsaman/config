@@ -20,7 +20,7 @@ return {
 			},
 			n_completions = 1,
 			context_window = 4096,
-			throttle = 200,
+			throttle = 400,
 			debounce = 100,
 			request_timeout = 10,
 			provider_options = {
@@ -30,9 +30,18 @@ return {
 					api_key = "TERM",
 					name = "LMStudio",
 					stream = true,
-					template = require("minuet.config").default_fim_template,
+					template = {
+						prompt = function(context_before_cursor, _, _)
+							return "<|fim_begin|>" .. context_before_cursor
+						end,
+						suffix = function(_, context_after_cursor, _)
+							return context_after_cursor .. "<|fim_end|>"
+						end,
+					},
 					optional = {
 						max_tokens = 128,
+						top_p = 0.9,
+						thinking = { type = "disabled" },
 					},
 				},
 			},
