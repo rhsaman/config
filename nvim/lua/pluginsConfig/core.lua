@@ -100,7 +100,10 @@ return {
   {
     "numToStr/Comment.nvim",
     lazy = true,
-    event = { "BufReadPre", "BufNewFile" },
+    keys = {
+      { "gcc", mode = "n", desc = "Toggle comment line" },
+      { "gc", mode = { "n", "v" }, desc = "Toggle comment" },
+    },
     dependencies = {
       "JoosepAlviste/nvim-ts-context-commentstring",
     },
@@ -161,10 +164,5 @@ return {
         },
       })
     end,
-  },
-
-  -- tmux navigator
-  {
-    "christoomey/vim-tmux-navigator", -- tmux & split window navigation
   },
 }
