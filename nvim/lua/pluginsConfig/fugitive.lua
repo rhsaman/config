@@ -49,7 +49,7 @@ return {
 					},
 				},
 				temperature = 0.8,
-				max_tokens = 256,
+				max_tokens = 126,
 			}
 
 			-- Write JSON payload to temp file to avoid shell escaping issues
