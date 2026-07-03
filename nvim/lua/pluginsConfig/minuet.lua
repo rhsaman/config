@@ -18,7 +18,7 @@ return {
 					dismiss = "<C-e>",
 				},
 			},
-			n_completions = 3,
+			n_completions = 1,
 			context_window = 4096,
 			throttle = 200,
 			debounce = 100,
