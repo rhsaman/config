@@ -19,7 +19,7 @@ return {
 				},
 			},
 			n_completions = 1,
-			context_window = 4096,
+			context_window = 2000,
 			throttle = 400,
 			debounce = 100,
 			request_timeout = 10,
@@ -39,7 +39,7 @@ return {
 						end,
 					},
 					optional = {
-						max_tokens = 128,
+						max_tokens = 52,
 						top_p = 0.9,
 						thinking = { type = "disabled" },
 					},
