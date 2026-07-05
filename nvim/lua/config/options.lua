@@ -38,6 +38,14 @@ vim.g.rustfmt_autosave = 1
 
 -- vim.g.python3_host_prog = "/Users/saman/Documents/code/music/ai/.venv/bin/python"
 
+-- Filetype detection for .env files (Comment.nvim needs a filetype)
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = { ".env", ".env.*" },
+  callback = function()
+    vim.bo.filetype = "sh"
+  end,
+})
+
 -- fold with treesitter
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
