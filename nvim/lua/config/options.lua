@@ -40,10 +40,10 @@ vim.g.rustfmt_autosave = 1
 
 -- Filetype detection for .env files (Comment.nvim needs a filetype)
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = { ".env", ".env.*" },
-  callback = function()
-    vim.bo.filetype = "sh"
-  end,
+	pattern = { ".env", ".env.*", "*.env" },
+	callback = function()
+		vim.bo.filetype = "sh"
+	end,
 })
 
 -- fold with treesitter
