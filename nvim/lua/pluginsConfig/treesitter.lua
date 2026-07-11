@@ -41,6 +41,8 @@ return {
 					"go",
 					"dart",
 					"python",
+					"c",
+					"cpp",
 				},
 
 				incremental_selection = {
