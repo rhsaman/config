@@ -10,14 +10,14 @@ return {
 		local hooks = require("ibl.hooks")
 
 		hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
-			--  cappuchino
-			-- vim.api.nvim_set_hl(0, "gray", { fg = "#262538" })
-
-			-- gruvebox
+			--  gruvebox
 			-- vim.api.nvim_set_hl(0, "gray", { fg = "#2D2D2D" })
 
 			-- rosepine
-			vim.api.nvim_set_hl(0, "gray", { fg = "#22212F" })
+			-- vim.api.nvim_set_hl(0, "gray", { fg = "#22212F" })
+
+			-- cappuccino mocha
+			vim.api.nvim_set_hl(0, "gray", { fg = "#313244" })
 		end)
 
 		require("ibl").setup({
