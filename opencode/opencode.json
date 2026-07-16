@@ -27,12 +27,15 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "My Local (LM Studio)",
       "options": {
-        "baseURL": "http://localhost:1234/v1",
+        "baseURL": "http://192.168.1.50:8080/v1",
         "apiKey": "not-needed"
       },
       "models": {
-        "google/gemma-4-e2b": {
-          "name": "qwen3.5-4b"
+        "Qwen3.5-9B-Q4_K_M": {
+          "name": "Qwen3.5-9B-Q4_K_M"
+        },
+        "ornith-1.0-9b-Q4_K_M.gguf": {
+          "name": "ornith-1.0-9b-Q4_K_M.gguf"
         }
       }
     },

@@ -1,4 +1,5 @@
 return {
+
 	"milanglacier/minuet-ai.nvim",
 	version = "*",
 	config = function()
@@ -6,9 +7,32 @@ return {
 			provider = "openai_fim_compatible",
 			blink = {
 				enable_auto_complete = true,
+				enable_context,
 			},
 			virtualtext = {
-				auto_trigger_ft = { "lua", "py", "js", "ts", "go", "dart", "toml", "json" },
+				auto_trigger_ft = {
+					"lua",
+					"python",
+					"javascript",
+					"typescript",
+					"tsx",
+					"go",
+					"dart",
+					"rust",
+					"cpp",
+					"c",
+					"vim",
+					"markdown",
+					"yaml",
+					"json",
+					"toml",
+					"dockerfile",
+					"html",
+					"css",
+					"sql",
+					"bash",
+					"gitignore",
+				},
 				keymap = {
 					accept = "<C-CR>",
 					accept_line = "<C-l>",
@@ -19,7 +43,7 @@ return {
 				},
 			},
 			n_completions = 1,
-			context_window = 2000,
+			context_window = 1500,
 			throttle = 400,
 			debounce = 100,
 			request_timeout = 10,
@@ -39,7 +63,7 @@ return {
 						end,
 					},
 					optional = {
-						max_tokens = 52,
+						max_tokens = 128,
 						top_p = 0.9,
 						thinking = { type = "disabled" },
 					},
