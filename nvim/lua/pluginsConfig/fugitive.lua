@@ -37,7 +37,7 @@ return {
 			vim.notify("Generating commit message from staged changes...", vim.log.levels.INFO)
 
 			local prompt = {
-				model = "qwen3.5-4b",
+				model = "gemma-4-e2b-it", -- qwen3.5-4b gemma-4-e2b-it
 				messages = {
 					{
 						role = "system",
@@ -49,6 +49,7 @@ return {
 					},
 				},
 				temperature = 0.7,
+				thinking = { type = "disabled" },
 				max_tokens = 512,
 			}
 
