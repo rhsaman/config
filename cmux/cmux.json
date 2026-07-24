@@ -173,8 +173,8 @@
 
   //   "markdown" : {
   //     "maxWidth" : 980,
-       "fontSize" : 15,
-       "fontFamily" : "JetBrains Mono"
+//       "fontSize" : 15,
+//       "fontFamily" : "JetBrains Mono"
   //   },
 
   //   "fileEditor" : {
