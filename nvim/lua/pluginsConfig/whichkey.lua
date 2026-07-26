@@ -36,12 +36,11 @@ return {
       { "<leader>a", group = "ai" },
       { "<leader>g", group = "git" },
       { "<leader>F", group = "flutter" },
-      { "<leader>T", group = "tab" },
       { "<leader>w", group = "session" },
       { "<leader>s", group = "pane" },
       { "<leader>c", group = "code" },
       { "<leader>j", group = "terminal" },
-      { "<leader>t", group = "Trouble" },
+		{ "<leader>t", group = "tab" },
     })
   end,
 }

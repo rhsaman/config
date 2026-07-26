@@ -27,11 +27,6 @@ keymap.set("n", "<C-w>l", "<C-w>10<", { desc = "Resize window left" })
 keymap.set("n", "<C-w>h", "<C-w>10>", { desc = "Resize window right" })
 keymap.set("n", "<C-w>j", "<C-w>10-", { desc = "Resize window up" })
 keymap.set("n", "<C-w>k", "<C-w>10+", { desc = "Resize window down" })
------------------------tabs-----------------------
--- keymap.set("n", "<leader>To", ":tabnew<CR>", { desc = "open tab" })
--- keymap.set("n", "<leader>Tx", ":tabclose<CR>", { desc = "close tab" })
--- keymap.set("n", "<leader>Tk", ":tabn<CR>", { desc = "next tab" })
--- keymap.set("n", "<leader>Tj", ":tabp<CR>", { desc = "previous tab" })
 
 -- telescope git commands (not on youtube nvim video)
 keymap.set(

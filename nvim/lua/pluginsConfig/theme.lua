@@ -22,6 +22,7 @@ return {
 			},
 
 			integrations = {
+				bufferline = true,
 				telescope = true,
 				lualine = true,
 				gitsigns = true,
