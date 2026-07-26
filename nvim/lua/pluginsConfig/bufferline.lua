@@ -8,9 +8,10 @@ return {
 		{ "<M-h>", "<cmd>BufferLineCyclePrev<CR>", desc = "previous tab" },
 		{ "<M-S-l>", "<cmd>BufferLineMoveNext<CR>", desc = "move tab right" },
 		{ "<M-S-h>", "<cmd>BufferLineMovePrev<CR>", desc = "move tab left" },
-		{ "<leader>tc", "<cmd>BufferLineCloseOthers<CR>", desc = "close other buffers" },
-		{ "<leader>tl", "<cmd>BufferLineCloseRight<CR>", desc = "close right buffers" },
-		{ "<leader>th", "<cmd>BufferLineCloseLeft<CR>", desc = "close left buffers" },
+		{ "<leader>bb", "<cmd>BufferLinePick<CR>", desc = "pick tab" },
+		{ "<leader>bc", "<cmd>BufferLineCloseOthers<CR>", desc = "close other buffers" },
+		{ "<leader>bl", "<cmd>BufferLineCloseRight<CR>", desc = "close right buffers" },
+		{ "<leader>bh", "<cmd>BufferLineCloseLeft<CR>", desc = "close left buffers" },
 	},
 	config = function()
 		require("bufferline").setup({
