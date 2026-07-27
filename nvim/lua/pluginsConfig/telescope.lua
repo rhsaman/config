@@ -1,6 +1,6 @@
 return {
 	"nvim-telescope/telescope.nvim",
-	branch = "0.1.x",
+	version = "*",
 	cmd = { "Telescope" }, -- Only load when Telescope commands are used
 	dependencies = {
 		"nvim-lua/plenary.nvim",
