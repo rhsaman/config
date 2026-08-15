@@ -46,9 +46,9 @@ return {
 						content = "Generate a commit message for this diff:\n\n" .. diff,
 					},
 				},
-				temperature = 0.7,
+				temperature = 0.6,
 				thinking = { type = "disabled" },
-				max_tokens = 512,
+				max_tokens = 1024,
 			}
 
 			-- Write JSON payload to temp file to avoid shell escaping issues

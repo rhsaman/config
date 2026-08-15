@@ -4,11 +4,12 @@ return {
 	version = "*",
 	dependencies = { "nvim-tree/nvim-web-devicons" },
 	keys = {
-		{ "<M-]>", "<cmd>BufferLineCycleNext<CR>", desc = "next tab" },
-		{ "<M-[>", "<cmd>BufferLineCyclePrev<CR>", desc = "previous tab" },
-		{ "<M-S-]>", "<cmd>BufferLineMoveNext<CR>", desc = "move tab right" },
-		{ "<M-S-[>", "<cmd>BufferLineMovePrev<CR>", desc = "move tab left" },
+		{ "<M-l>", "<cmd>BufferLineCycleNext<CR>", desc = "next tab" },
+		{ "<M-h>", "<cmd>BufferLineCyclePrev<CR>", desc = "previous tab" },
+		{ "<M-S-l>", "<cmd>BufferLineMoveNext<CR>", desc = "move tab right" },
+		{ "<M-S-h>", "<cmd>BufferLineMovePrev<CR>", desc = "move tab left" },
 		{ "<leader>bb", "<cmd>BufferLinePick<CR>", desc = "pick tab" },
+		{ "<leader>bd", "<cmd>BufferLinePickClose<CR>", desc = "pick close tab" },
 		{ "<leader>bc", "<cmd>BufferLineCloseOthers<CR>", desc = "close other buffers" },
 		{ "<leader>bl", "<cmd>BufferLineCloseRight<CR>", desc = "close right buffers" },
 		{ "<leader>bh", "<cmd>BufferLineCloseLeft<CR>", desc = "close left buffers" },
@@ -21,6 +22,17 @@ return {
 				separator_style = "slant",
 				hover = { enabled = true, delay = 200 },
 				offsets = { { filetype = "neo-tree", text = "Explorer" } },
+				custom_filter = function(buf)
+					local buftype = vim.bo[buf].buftype
+					if buftype == "quickfix" or buftype == "help" or buftype == "terminal" then
+						return false
+					end
+					local buf_path = vim.api.nvim_buf_get_name(buf)
+					if buf_path ~= "" then
+						return buf_path:find(vim.fn.getcwd(), 1, true) == 1
+					end
+					return true
+				end,
 			},
 		})
 	end,

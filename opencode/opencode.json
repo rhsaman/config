@@ -3,9 +3,7 @@
   "model": "opencode/deepseek-v4-flash-free",
   "default_agent": "plan",
   "agent": {
-    "build": {
-      "variant": "medium"
-    },
+    "build": { "variant": "medium" },
     "vision": {
       "description": "Vision-capable agent for image analysis using OpenRouter free models",
       "mode": "subagent",
@@ -14,29 +12,19 @@
   },
   "provider": {
     "openrouter": {
-      "options": {
-        "apiKey": "{env:OPENROUTER_API_KEY}"
-      },
-      "models": {
-        "openrouter/free": {
-          "name": "openrouter free"
-        }
-      }
+      "options": { "apiKey": "{env:OPENROUTER_API_KEY}" },
+      "models": { "openrouter/free": { "name": "openrouter free" } }
     },
     "my-local": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "My Local (LM Studio)",
       "options": {
-        "baseURL": "http://192.168.1.50:8080/v1",
+        "baseURL": "http://localhost:1234/v1",
         "apiKey": "not-needed"
       },
       "models": {
-        "Qwen3.5-9B-Q4_K_M": {
-          "name": "Qwen3.5-9B-Q4_K_M"
-        },
-        "ornith-1.0-9b-Q4_K_M.gguf": {
-          "name": "ornith-1.0-9b-Q4_K_M.gguf"
-        }
+        "Qwen3.5-9B-Q4_K_M": { "name": "Qwen3.5-9B-Q4_K_M" },
+        "ornith-1.0-9b-Q4_K_M.gguf": { "name": "ornith-1.0-9b-Q4_K_M.gguf" }
       }
     },
     "cloudflare-workers-ai": {
@@ -45,9 +33,7 @@
         "apiKey": "{env:CLOUDFLARE_AUTH_TOKEN}"
       },
       "models": {
-        "@cf/moonshotai/kimi-k2.7-code": {
-          "name": "Kimi K2.7 Code"
-        }
+        "@cf/moonshotai/kimi-k2.7-code": { "name": "Kimi K2.7 Code" }
       }
     },
     "nvidia": {
@@ -57,6 +43,13 @@
         "baseURL": "https://integrate.api.nvidia.com/v1",
         "apiKey": "{env:NVIDIA_API_KEY}"
       }
+    }
+  },
+  "mcp": {
+    "MCP_DOCKER": {
+      "type": "local",
+      "command": ["docker", "mcp", "gateway", "run"],
+      "enabled": true
     }
   }
 }
