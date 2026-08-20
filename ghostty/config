@@ -1,0 +1,6 @@
+# Ghostty configuration
+# https://ghostty.org/docs/config/reference
+
+# Send Option (⌥) as Meta/Alt so Neovim receives <M-h>, <M-l>, etc.
+# cmux is Ghostty-based and reads this file; it uses the macos-option-as-alt key.
+macos-option-as-alt = true
