@@ -1,26 +1,19 @@
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
+		branch = "master", -- برنچ قدیمی و پایدار — به CLI جداگانه‌ی tree-sitter نیاز ندارد
 		lazy = true,
 		event = { "BufReadPre", "BufNewFile" },
 		build = ":TSUpdate",
 		dependencies = {
-			"nvim-treesitter/nvim-treesitter-textobjects",
 			"windwp/nvim-ts-autotag",
 		},
 
 		config = function()
-			local treesitter = require("nvim-treesitter")
+			local treesitter = require("nvim-treesitter.configs")
 
 			treesitter.setup({
-				highlight = {
-					enable = true,
-					additional_vim_regex_highlighting = true,
-				},
-				indent = { enable = true },
-				autotag = {
-					enable = true,
-				},
+				-- نصب خودکار پارسرها (با کامپایلر C سیستم، بدون نیاز به tree-sitter CLI)
 				ensure_installed = {
 					"tsx",
 					"json",
@@ -45,24 +38,13 @@ return {
 					"cpp",
 				},
 
-				incremental_selection = {
-					enable = true,
-				},
-				-- enable nvim-ts-context-commentstring plugin for commenting tsx and jsx
-				ts_context_commentstring = {
-					enable = true,
-					enable_autocmd = false,
-					config = {
-						javascript = {
-							__default = "// %s",
-							jsx_element = "{/* %s */}",
-							jsx_fragment = "{/* %s */}",
-							jsx_attribute = "// %s",
-							comment = "// %s",
-						},
-					},
-				},
+				-- هایلایت و ایندنت با treesitter
+				highlight = { enable = true },
+				indent = { enable = true },
 			})
+
+			-- بستن خودکار تگ‌های html/jsx
+			require("nvim-ts-autotag").setup({})
 		end,
 	},
 }
