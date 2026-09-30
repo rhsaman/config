@@ -35,7 +35,7 @@ return {
 			vim.notify("Generating commit message from staged changes...", vim.log.levels.INFO)
 
 			local prompt = {
-				model = "gemma-4-e2b-it", -- qwen3.5-4b gemma-4-e2b-it
+				model = "oc/big-pickle", -- qwen3.5-4b gemma-4-e2b-it
 				messages = {
 					{
 						role = "system",
@@ -62,7 +62,7 @@ return {
 				"30",
 				"-X",
 				"POST",
-				"http://127.0.0.1:1234/v1/chat/completions",
+				"http://localhost:20128/v1/chat/completions",
 				"-H",
 				"Content-Type: application/json",
 				"-d",
